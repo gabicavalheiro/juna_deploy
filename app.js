@@ -12,8 +12,13 @@ const authorizedUser = {
 };
 
 // Rota única para autenticação e acesso aos dados protegidos
-app.post('/api', async (req, res) => {
-  const { username, password } = req.body;
+app.get('/api', async (req, res) => {
+  const { username, password } = req.query;
+
+  // Verifique se o nome de usuário e senha foram fornecidos
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Favor fornecer nome de usuário e senha' });
+  }
 
   // Verifique se o nome de usuário está correto
   if (username !== authorizedUser.username) {
@@ -34,8 +39,8 @@ app.post('/api', async (req, res) => {
     message: 'Login bem-sucedido',
     token,
     data: {
-      message: 'Dados protegidos',
-    },
+      message: 'Dados protegidos'
+    }
   });
 });
 
