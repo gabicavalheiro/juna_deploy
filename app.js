@@ -11,8 +11,8 @@ const authorizedUser = {
   passwordHash: process.env.AUTHORIZED_PASSWORD_HASH, // Use bcrypt para gerar e armazenar
 };
 
-// Rota para autenticação (login)
-app.post('/login', async (req, res) => {
+// Rota única para autenticação e acesso aos dados protegidos
+app.post('/api', async (req, res) => {
   const { username, password } = req.body;
 
   // Verifique se o nome de usuário está correto
@@ -29,8 +29,14 @@ app.post('/login', async (req, res) => {
   // Se as credenciais estiverem corretas, gera um token JWT
   const token = jwt.sign({ username: authorizedUser.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-  // Retorna o token como resposta
-  res.json({ token });
+  // Retorna os dados protegidos junto com o token como resposta
+  res.json({
+    message: 'Login bem-sucedido',
+    token,
+    data: {
+      message: 'Dados protegidos',
+    },
+  });
 });
 
 // Middleware para verificar o token JWT
@@ -53,11 +59,6 @@ const authenticateToken = (req, res, next) => {
 
 // Middleware de autenticação para todas as rotas protegidas
 app.use(authenticateToken);
-
-// Rota protegida de exemplo
-app.get('/data', (req, res) => {
-  res.json({ message: 'Dados protegidos' });
-});
 
 // Iniciando o servidor
 app.listen(port, () => {
