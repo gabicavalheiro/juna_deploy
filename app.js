@@ -4,6 +4,16 @@ import jwt from 'jsonwebtoken';
 
 const app = express();
 const port = process.env.PORT || 3000;
+const senha = 'sua_senha';
+const saltRounds = 10;
+
+bcrypt.hash(senha, saltRounds, (err, hash) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log('Hash da senha:', hash);
+});
 
 // Usuário autorizado (simulado, você pode buscar de um banco de dados)
 const authorizedUser = {
