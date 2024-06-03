@@ -1,5 +1,5 @@
-import express from 'express';
 import bcrypt from 'bcryptjs';
+import express from 'express';
 import jwt from 'jsonwebtoken';
 
 const app = express();
@@ -11,8 +11,8 @@ const authorizedUser = {
   passwordHash: process.env.AUTHORIZED_PASSWORD_HASH, // Use bcryptjs para gerar e armazenar
 };
 
-// Middleware de autenticação
-const authenticateUser = async (req, res, next) => {
+// Rota única para autenticação e acesso aos dados protegidos
+app.get('/api', async (req, res) => {
   const { username, password } = req.query;
 
   // Verifique se o nome de usuário e senha foram fornecidos
@@ -34,8 +34,38 @@ const authenticateUser = async (req, res, next) => {
   // Se as credenciais estiverem corretas, gera um token JWT
   const token = jwt.sign({ username: authorizedUser.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-  // Adiciona o token à requisição e continua
-  req.token = token;
-  next();
+  // Retorna os dados protegidos junto com o token como resposta
+  res.json({
+    message: 'Login bem-sucedido',
+    token,
+    data: {
+      message: 'Dados protegidos'
+    }
+  });
+});
+
+// Middleware para verificar o token JWT
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token não fornecido' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ error: 'Token inválido' });
+    }
+    req.user = decoded; // Decodificado, podemos acessar o nome de usuário
+    next();
+  });
 };
 
+// Middleware de autenticação para todas as rotas protegidas
+app.use(authenticateToken);
+
+// Iniciando o servidor
+app.listen(port, () => {
+  console.log(`Servidor está rodando na porta ${port}`);
+});
