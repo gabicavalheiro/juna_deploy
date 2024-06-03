@@ -1,5 +1,5 @@
+// app.js
 import express from 'express';
-import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -7,19 +7,19 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Usuário autorizado (simulado, você pode buscar de um banco de dados)
+// Usuário autorizado
 const authorizedUser = {
   username: process.env.AUTHORIZED_USERNAME,
   passwordHash: process.env.AUTHORIZED_PASSWORD_HASH,
 };
 
 // Rota única para autenticação e acesso aos dados protegidos
-app.get('/api', async (req, res) => {
+app.get('/api', (req, res) => {
   const { username, password } = req.query;
 
-  // Verifique se o nome de usuário e senha foram fornecidos
+  // Verifique se o nome de usuário e hash da senha foram fornecidos
   if (!username || !password) {
-    return res.status(400).json({ error: 'Favor fornecer nome de usuário e senha' });
+    return res.status(400).json({ error: 'Favor fornecer nome de usuário e hash da senha' });
   }
 
   // Verifique se o nome de usuário está correto
@@ -27,9 +27,8 @@ app.get('/api', async (req, res) => {
     return res.status(401).json({ error: 'Credenciais inválidas' });
   }
 
-  // Verifique se a senha está correta
-  const match = await bcrypt.compare(password, authorizedUser.passwordHash);
-  if (!match) {
+  // Verifique se o hash da senha está correto
+  if (password !== authorizedUser.passwordHash) {
     return res.status(401).json({ error: 'Credenciais inválidas' });
   }
 

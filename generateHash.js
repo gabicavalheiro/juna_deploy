@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 
-const senha = 'process.env.SENHA';
+const senha = 'SENHA';
 const saltRounds = 10;
 
 bcrypt.hash(senha, saltRounds, (err, hash) => {
