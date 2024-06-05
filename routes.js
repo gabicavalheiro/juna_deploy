@@ -1,8 +1,11 @@
-
 import express from 'express';
+import cors from 'cors';
 import { administradorIndex, administradorCreate, administradorLogin, administradorDestroy } from './controllers/admController.js';
 
 const router = express.Router();
+
+// Configuração do CORS
+router.use(cors());
 
 // Rotas para administradores
 router.get('/administradores', administradorIndex);
