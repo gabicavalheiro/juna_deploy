@@ -59,6 +59,7 @@ function validaSenha(senha) {
    
     if (!nome || !email || !senha || !admin ) {
       res.status(400).json({ id: 0, msg: "Erro... Informe os dados" })
+      console.error(error)
       return
     }
   
