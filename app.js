@@ -13,19 +13,25 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json())
-app.use(cors());
+app.use(cors({
+  origin: '*', // URL do seu cliente, ou '*' para aceitar todas as origens
+  methods: ['GET', 'POST'], // Métodos HTTP permitidos
+  allowedHeaders: ['Content-Type'], // Headers permitidos
+  credentials: true, // Permite o envio de credenciais (cookies, por exemplo)
+
+}));
 app.use(routes)
 
 
 
-async function conecta_db(){
- 
+async function conecta_db() {
+
   try {
     await sequelize.authenticate();
     console.log('Conexão com banco de dados realizada com sucesso');
   } catch (error) {
     console.error('Erro na conexão com o banco de dados:', error);
-  } 
+  }
 
 }
 conecta_db()

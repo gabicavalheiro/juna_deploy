@@ -5,7 +5,13 @@ import { administradorIndex, administradorCreate, administradorLogin, administra
 const router = express.Router();
 
 // Configuração do CORS
-router.use(cors());
+router.use(cors({
+       origin: '*', // URL do seu cliente, ou '*' para aceitar todas as origens
+       methods: ['GET', 'POST'], // Métodos HTTP permitidos
+       allowedHeaders: ['Content-Type'], // Headers permitidos
+       credentials: true, // Permite o envio de credenciais (cookies, por exemplo)
+     
+     }));;
 
 // Rotas para administradores
 router.get('/administradores', administradorIndex);
