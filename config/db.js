@@ -10,6 +10,11 @@ export const sequelize = new Sequelize(
   {
     host: process.env.MYSQLHOST,
     port: process.env.MYSQLPORT,
-    dialect: 'mysql', // ou 'postgres', 'sqlite', 'mssql', etc., dependendo do seu banco de dados
+    dialect: 'mysql',
+    dialectOptions: {
+      connectTimeout: 60000 // aumentar o tempo de espera, se necessário
+    }
   }
 );
+
+
