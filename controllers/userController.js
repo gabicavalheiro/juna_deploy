@@ -1,5 +1,5 @@
 
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { Administrador } from '../models/administrador.js'
 
 
