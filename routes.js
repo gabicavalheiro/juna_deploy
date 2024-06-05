@@ -1,11 +1,13 @@
-import { Router } from "express";
-import { administradorCreate, administradorDestroy, administradorIndex, administradorLogin } from "./controllers/admController.js";
 
-const router = Router()
+import express from 'express';
+import { administradorIndex, administradorCreate, administradorLogin, administradorDestroy } from './controllers/admController.js';
 
-router .get('/Administradores', administradorIndex)
-       .post('/Administradores', administradorCreate)
-       .post('/Login', administradorLogin)
-       .delete('/Administradores/:id',  administradorDestroy);
+const router = express.Router();
+
+// Rotas para administradores
+router.get('/administradores', administradorIndex);
+router.post('/administradores', administradorCreate);
+router.post('/administradores/login', administradorLogin);
+router.delete('/administradores/:id', administradorDestroy);
 
 export default router;

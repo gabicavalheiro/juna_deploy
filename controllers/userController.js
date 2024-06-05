@@ -62,11 +62,7 @@ function validaSenha(senha) {
       return
     }
   
-    const mensagemValidacao = validaSenha(senha)
-    if (mensagemValidacao.length >= 1) {
-      res.status(400).json({ id: 0, msg: mensagemValidacao })
-      return
-    }
+   
   
     try {
       const administradores = await Administrador.create({

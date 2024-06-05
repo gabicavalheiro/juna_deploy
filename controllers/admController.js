@@ -68,14 +68,15 @@ function validaSenha(senha) {
       return
     }
   
-    try {
-      const administradores = await Administrador.create({
-        nome, email, senha, admin
-      });
-      res.status(201).json(administradores)
-    } catch (error) {
-      res.status(400).send(error)
-    }
+  try {
+  const administradores = await Administrador.create({
+    nome, email, senha, admin
+  });
+  res.status(201).json(administradores);
+} catch (error) {
+  console.error('Erro ao criar administrador:', error);
+  res.status(400).send("Erro ao criar administrador");
+}
   }
 
 
