@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { administradorIndex, administradorCreate, administradorLogin, administradorDestroy } from './controllers/admController.js';
 import { createUser } from './controllers/createUser.js';
+import { userIndex, usuarioDestroy, usuarioLogin } from './controllers/userController.js';
 
 const router = express.Router();
 
@@ -16,9 +17,12 @@ router.use(cors({
 
 // Rotas para administradores
 router.get('/administradores', administradorIndex);
-router.post('/administradores', administradorCreate);
 router.post('/administradores/login', administradorLogin);
 router.delete('/administradores/:id', administradorDestroy);
+
+router.get('/clientes', userIndex);
+router.post('/clientes/login', usuarioLogin);
+router.delete('/clientes/:id', usuarioDestroy);
 
 router.post('/usuarios', createUser);
 
