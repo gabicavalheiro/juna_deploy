@@ -1,6 +1,7 @@
 
 import bcrypt from 'bcryptjs'
 import { Administrador } from '../models/administrador.js'
+import { Usuario } from '../models/usuario.js'
 
 
 function validaSenha(senha) {
@@ -43,59 +44,37 @@ function validaSenha(senha) {
     return mensagem
   }
   
-  export const administradorIndex = async (req, res) => {
+  export const userIndex = async (req, res) => {
   
     try {
-      const administradores = await Administrador.findAll();
-      res.status(200).json(administradores)
+      const usuarios = await Usuario.findAll();
+      res.status(200).json(usuarios)
     } catch (error) {
       res.status(400).send(error)
     }
   }
   
-  export const administradorCreate = async (req, res) => {
-    const { nome, email, senha, admin } = req.body
-  
-   
-    if (!nome || !email || !senha || !admin ) {
-      res.status(400).json({ id: 0, msg: "Erro... Informe os dados" })
-      return
-    }
-  
-   
-  
-    try {
-      const administradores = await Administrador.create({
-        nome, email, senha, admin
-      });
-      res.status(201).json(administradores)
-    } catch (error) {
-      res.status(400).send(error)
-    }
-  }
 
 
 
-
-
-  export const administradorLogin = async (req, res) => {
+  export const usuarioLogin = async (req, res) => {
     const { email, senha } = req.body;
   
     try {
-      const administradores = await Administrador.findOne({ where: { email } });
+      const usuarios = await Usuario.findOne({ where: { email } });
   
-      if (!administradores) {
+      if (!usuarios) {
         res.status(400).json({ erro: 'Login ou senha incorreto' });
         return;
       }
   
-      if (bcrypt.compareSync(senha, administradores.senha)) {
-        if (administradores.admin) {
+      if (bcrypt.compareSync(senha, usuarios.senha)) {
+        if (usuarios.admin) {
           // Se o usuário for administrador
-          res.status(200).json({ id: administradores.id, nome: administradores.nome, admin: true, tipo: 'Adm' });
+          res.status(200).json({ id: usuarios.id, nome: usuarios.nome, admin: true, tipo: 'Adm' });
         } else {
           // Se o usuário for um usuário comum
-          res.status(200).json({ id: administradores.id, nome: administradores.nome, admin: false, tipo: 'Usuário' });
+          res.status(200).json({ id: usuarios.id, nome: usuarios.nome, admin: false, tipo: 'Usuário' });
         }
       } else {
         res.status(401).json({ erro: 'Login ou senha incorreto' });
@@ -109,21 +88,21 @@ function validaSenha(senha) {
   // Middleware de autorização de administrador
 
 // Função para excluir administrador por id
-export const administradorDestroy = async (req, res) => {
+export const usuarioDestroy = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const administrador = await Administrador.findByPk(id);
-    if (!administrador) {
-      return res.status(404).json({ erro: "Administrador não encontrado" });
+    const usuario = await Usuario.findByPk(id);
+    if (!usuario) {
+      return res.status(404).json({ erro: "usuario não encontrado" });
     }
 
-    await administrador.destroy();
+    await usuario.destroy();
 
-    res.status(200).json({ msg: "Administrador excluído com sucesso" });
+    res.status(200).json({ msg: "Usuario excluído com sucesso" });
 
   } catch (error) {
-    res.status(400).json({ erro: "Erro ao excluir administrador", detalhes: error });
+    res.status(400).json({ erro: "Erro ao excluir Usuario", detalhes: error });
   }
 };
 

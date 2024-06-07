@@ -27,6 +27,7 @@ export const Administrador = sequelize.define('administradores', {
         allowNull: false,
     }
     }, {
+      tableName: 'administradores',
       timestamps: false, // Desabilita os campos de timestamp (createdAt e updatedAt)
       paranoid: true 
       // Habilita o soft delete (paranoid mode)

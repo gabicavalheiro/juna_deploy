@@ -12,7 +12,6 @@ export const Usuario = sequelize.define('usuario', {
       },
       username:{
         type: DataTypes.STRING(100),
-        allowNull: false
       },
       nome: {
         type: DataTypes.STRING(100),
@@ -26,7 +25,12 @@ export const Usuario = sequelize.define('usuario', {
         type: DataTypes.STRING(250),
         allowNull: false
       },
+      role: {
+        type: DataTypes.ENUM('admin', 'user'),
+        allowNull: false,
+    }
     }, {
+      tableName: 'usuarios',
       timestamps: false, // Desabilita os campos de timestamp (createdAt e updatedAt)
       paranoid: true 
       // Habilita o soft delete (paranoid mode)
