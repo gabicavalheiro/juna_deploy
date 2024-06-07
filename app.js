@@ -29,6 +29,8 @@ async function conecta_db() {
   try {
     await sequelize.authenticate();
     console.log('Conexão com banco de dados realizada com sucesso');
+
+    // await sequelize.sync({ force: true });
   } catch (error) {
     console.error('Erro na conexão com o banco de dados:', error);
   }

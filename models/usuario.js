@@ -26,10 +26,6 @@ export const Usuario = sequelize.define('usuario', {
         type: DataTypes.STRING(250),
         allowNull: false
       },
-      admin: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false
-      }
     }, {
       timestamps: false, // Desabilita os campos de timestamp (createdAt e updatedAt)
       paranoid: true 

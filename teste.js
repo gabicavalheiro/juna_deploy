@@ -7,7 +7,7 @@ const enviarDados = async () => {
     };
   
     try {
-      const response = await fetch('https://junadeploy-production.up.railway.app/Administradores', {
+      const response = await fetch('https://junadeploy-production.up.railway.app/administradores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

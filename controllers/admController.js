@@ -54,10 +54,10 @@ function validaSenha(senha) {
   }
   
   export const administradorCreate = async (req, res) => {
-    const { nome, email, senha, admin } = req.body
+    const { nome, email, senha, role } = req.body
   
    
-    if (!nome || !email || !senha || !admin ) {
+    if (!nome || !email || !senha || !role ) {
       res.status(400).json({ id: 0, msg: "Erro... Informe os dados" })
       return
     }
@@ -70,7 +70,7 @@ function validaSenha(senha) {
   
   try {
   const administradores = await Administrador.create({
-    nome, email, senha, admin
+    nome, email, senha, role
   });
   res.status(201).json(administradores);
 } catch (error) {
@@ -80,36 +80,36 @@ function validaSenha(senha) {
   }
 
 
-
-
-
   export const administradorLogin = async (req, res) => {
     const { email, senha } = req.body;
-  
+
     try {
-      const administradores = await Administrador.findOne({ where: { email } });
-  
-      if (!administradores) {
-        res.status(400).json({ erro: 'Login ou senha incorreto' });
-        return;
-      }
-  
-      if (bcrypt.compareSync(senha, administradores.senha)) {
-        if (administradores.admin) {
-          // Se o usuário for administrador
-          res.status(200).json({ id: administradores.id, nome: administradores.nome, admin: true, tipo: 'Adm' });
-        } else {
-          // Se o usuário for um usuário comum
-          res.status(200).json({ id: administradores.id, nome: administradores.nome, admin: false, tipo: 'Usuário' });
+        const administrador = await Administrador.findOne({ where: { email } });
+
+        if (!administrador) {
+            res.status(400).json({ erro: 'Login ou senha incorreto' });
+            return;
         }
-      } else {
-        res.status(401).json({ erro: 'Login ou senha incorreto' });
-      }
-      
+
+        const senhaValida = bcrypt.compareSync(senha, administrador.senha);
+        
+        if (senhaValida) {
+            // Verifica o papel (role) do usuário
+            if (administrador.role === 'admin') {
+                // Se o usuário for administrador
+                res.status(200).json({ id: administrador.id, nome: administrador.nome, role: 'admin' });
+            } else {
+                // Se o usuário for um usuário comum
+                res.status(200).json({ id: administrador.id, nome: administrador.nome, role: 'user' });
+            }
+        } else {
+            res.status(401).json({ erro: 'Login ou senha incorreto' });
+        }
+
     } catch (error) {
-      res.status(400).send(error);
+        res.status(400).send(error);
     }
-  };
+};
 
   // Middleware de autorização de administrador
 
