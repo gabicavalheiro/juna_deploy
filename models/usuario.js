@@ -12,6 +12,7 @@ export const Usuario = sequelize.define('usuario', {
       },
       username:{
         type: DataTypes.STRING(100),
+        allowNull: false
       },
       nome: {
         type: DataTypes.STRING(100),
@@ -28,6 +29,10 @@ export const Usuario = sequelize.define('usuario', {
       role: {
         type: DataTypes.ENUM('admin', 'user'),
         allowNull: false,
+    },
+    senhaConfirmacao:{
+      type: DataTypes.STRING(250),
+      allowNull: false
     }
     }, {
       tableName: 'usuarios',

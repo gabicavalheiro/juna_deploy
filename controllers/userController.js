@@ -74,7 +74,7 @@ function validaSenha(senha) {
           res.status(200).json({ id: usuarios.id, nome: usuarios.nome, admin: true, tipo: 'Adm' });
         } else {
           // Se o usuário for um usuário comum
-          res.status(200).json({ id: usuarios.id, nome: usuarios.nome, admin: false, tipo: 'Usuário' });
+          res.status(200).json({ id: usuarios.id, nome: usuarios.nome, admin: false, username: usuarios.username, tipo: 'Usuário' });
         }
       } else {
         res.status(401).json({ erro: 'Login ou senha incorreto' });

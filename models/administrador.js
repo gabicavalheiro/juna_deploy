@@ -25,6 +25,10 @@ export const Administrador = sequelize.define('administradores', {
       role: {
         type: DataTypes.ENUM('admin', 'user'),
         allowNull: false,
+    },
+    senhaConfirmacao:{
+      type: DataTypes.STRING(250),
+      allowNull: false
     }
     }, {
       tableName: 'administradores',
