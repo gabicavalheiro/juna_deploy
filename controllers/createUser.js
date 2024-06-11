@@ -3,10 +3,10 @@ import { Usuario } from '../models/usuario.js';
 import { Administrador } from '../models/administrador.js';
 import validaSenha from '../utils/validaSenha.js';
 export const createUser = async (req, res) => {
-    const { nome, email, senha, role, username } = req.body;
+    const { nome, email, senha, role, senhaConfirmacao} = req.body;
 
     // Verifica se todos os campos obrigatórios foram fornecidos
-    if (!nome || !email || !senha || !role || !username) {
+    if (!nome || !email || !senha || !role || !senhaConfirmacao) {
         return res.status(400).json({ msg: 'Todos os campos são obrigatórios' });
     }
 
@@ -24,9 +24,9 @@ export const createUser = async (req, res) => {
 
         // Cria o usuário com base no papel (role)
         if (role === 'admin') {
-            user = await Administrador.create({ nome, email, senha: senhaHash, role, username });
+            user = await Administrador.create({ nome, email, senha: senhaHash, senhaConfirmacao, role });
         } else if (role === 'user') {
-            user = await Usuario.create({ nome, email, senha: senhaHash, role, username });
+            user = await Usuario.create({ nome, email, senha: senhaHash,  senhaConfirmacao, role, username });
         } else {
             return res.status(400).json({ msg: 'Role inválida' });
         }
