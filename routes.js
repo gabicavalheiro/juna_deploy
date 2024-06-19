@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { administradorIndex, administradorCreate, administradorLogin, administradorDestroy } from './controllers/admController.js';
-import { createUser } from './controllers/createUser.js';
+import { createUser, listUsers } from './controllers/createUser.js';
 import { userIndex, usuarioDestroy, usuarioLogin } from './controllers/userController.js';
 
 const router = express.Router();
@@ -25,5 +25,6 @@ router.post('/clientes/login', usuarioLogin);
 router.delete('/clientes/:id', usuarioDestroy);
 
 router.post('/usuarios', createUser);
+router.get('/usuarios', listUsers)
 
 export default router;

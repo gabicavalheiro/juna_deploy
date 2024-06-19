@@ -2,6 +2,28 @@ import bcrypt from 'bcryptjs';
 import { Usuario } from '../models/usuario.js';
 import { Administrador } from '../models/administrador.js';
 import validaSenha from '../utils/validaSenha.js';
+
+
+export const listUsers = async (req, res) => {
+    try {
+        // Busca todos os administradores
+        const admins = await Administrador.findAll();
+
+        // Busca todos os usuários
+        const users = await Usuario.findAll();
+
+        // Formata a resposta separando administradores e usuários
+        res.status(200).json({
+            admins,
+            users
+        });
+    } catch (error) {
+        console.error('Erro ao listar usuários:', error);
+        res.status(500).json({ msg: 'Erro ao listar usuários' });
+    }
+};
+
+
 export const createUser = async (req, res) => {
     const { nome, email, senha, role, senhaConfirmacao} = req.body;
 
