@@ -1,52 +1,48 @@
 import { DataTypes } from 'sequelize';
-import bcrypt from 'bcryptjs'
-
+import bcrypt from 'bcrypt';
 import { sequelize } from '../config/db.js';
 
 export const Usuario = sequelize.define('usuario', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
-      },
-      username:{
-        type: DataTypes.STRING(100),
-        allowNull: false
-      },
-      nome: {
-        type: DataTypes.STRING(100),
-        allowNull: false
-      },
-      email: {
-        type: DataTypes.STRING(200),
-        allowNull: false
-      },
-      senha: {
-        type: DataTypes.STRING(250),
-        allowNull: false
-      },
-      role: {
-        type: DataTypes.ENUM('admin', 'user'),
-        allowNull: false,
-    },
-    senhaConfirmacao:{
-      type: DataTypes.STRING(250),
-      allowNull: false
-    }
-    }, {
-      tableName: 'usuarios',
-      timestamps: false, // Desabilita os campos de timestamp (createdAt e updatedAt)
-      paranoid: true 
-      // Habilita o soft delete (paranoid mode)
-      //o Sequelize simplesmente define um marcador especial no registro (por exemplo, um campo deletedAt) para indicar que ele foi excluído. 
-      //Isso permite que os registros "excluídos" ainda sejam recuperados posteriormente, se necessário.
-    });
-    
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+    allowNull: false
+  },
+  username: {
+    type: DataTypes.STRING(100),
+    allowNull: false
+  },
+  nome: {
+    type: DataTypes.STRING(100),
+    allowNull: false
+  },
+  email: {
+    type: DataTypes.STRING(200),
+    allowNull: false
+  },
+  senha: {
+    type: DataTypes.STRING(60),
+    allowNull: false
+  },
+  role: {
+    type: DataTypes.ENUM('admin', 'user'),
+    allowNull: false,
+  },
+  senhaConfirmacao: {
+    type: DataTypes.STRING(250),
+  },
+  imagemPerfil: {
+    type: DataTypes.STRING(200) // Aqui você pode ajustar o tamanho conforme necessário
+  }
+}, {
+  tableName: 'usuarios',
+  timestamps: false,
+  paranoid: true
+});
 
-    //que significa que ele será executado antes que um novo registro seja inserido na tabela associada à model Administrador.
 Usuario.beforeCreate(usuario => {
-  const salt = bcrypt.genSaltSync(12)
-  const hash = bcrypt.hashSync(usuario.senha, salt)
-  usuario.senha = hash  
+  const salt = bcrypt.genSaltSync(12);
+  const hash = bcrypt.hashSync(usuario.senha, salt);
+  usuario.senha = hash;
 });
