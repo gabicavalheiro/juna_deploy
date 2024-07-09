@@ -80,39 +80,6 @@ function validaSenha(senha) {
   }
 
 
-  export const administradorLogin = async (req, res) => {
-    const { email, senha } = req.body;
-
-    try {
-        const administrador = await Administrador.findOne({ where: { email } });
-
-        if (!administrador) {
-            res.status(400).json({ erro: 'Login ou senha incorreto' });
-            return;
-        }
-
-        const senhaValida = bcrypt.compareSync(senha, administrador.senha);
-        
-        if (senhaValida) {
-            // Verifica o papel (role) do usuário
-            if (administrador.role === 'admin') {
-                // Se o usuário for administrador
-                res.status(200).json({ id: administrador.id, nome: administrador.nome, role: 'admin' });
-            } else {
-                // Se o usuário for um usuário comum
-                res.status(200).json({ id: administrador.id, nome: administrador.nome, role: 'user' });
-            }
-        } else {
-            res.status(401).json({ erro: 'Login ou senha incorreto' });
-        }
-
-    } catch (error) {
-        res.status(400).send(error);
-    }
-};
-
-  // Middleware de autorização de administrador
-
 // Função para excluir administrador por id
 export const administradorDestroy = async (req, res) => {
   const { id } = req.params;

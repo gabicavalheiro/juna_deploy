@@ -25,58 +25,61 @@ export const listUsers = async (req, res) => {
         res.status(500).json({ msg: 'Erro ao listar usuários' });
     }
 };
+
+
 export const createUser = async (req, res) => {
-    const { nome, email, senha, role, senhaConfirmacao, username } = req.body;
-  
-    // Verifica se todos os campos obrigatórios foram fornecidos
-    if (!nome || !email || !senha || !role ) {
-      return res.status(400).json({ msg: 'Todos os campos são obrigatórios' });
+  const { nome, email, senha, role, senhaConfirmacao, username } = req.body;
+
+  // Verifica se todos os campos obrigatórios foram fornecidos
+  if (!nome || !email || !senha || !role ) {
+    return res.status(400).json({ msg: 'Todos os campos são obrigatórios' });
+  }
+
+  // Verifica se username foi fornecido para usuários
+  if (role === 'user' && !username) {
+    return res.status(400).json({ msg: 'Username é obrigatório para usuários' });
+  }
+
+  // Valida a senha usando a função validaSenha
+  const mensagemValidacao = validaSenha(senha);
+  if (mensagemValidacao.length > 0) {
+    return res.status(400).json({ msg: mensagemValidacao });
+  }
+
+  // Verifica se senha e senhaConfirmacao são iguais
+  if (senha !== senhaConfirmacao) {
+    return res.status(400).json({ msg: 'A senha e a confirmação de senha não coincidem' });
+  }
+
+  try {
+    let user;
+
+    // Cria o usuário com base no papel (role)
+    if (role === 'admin') {
+      user = await Administrador.create({ nome, email, senha, role });
+    } else if (role === 'user') {
+      user = await Usuario.create({ nome, email, senha, role, username });
+    } else {
+      return res.status(400).json({ msg: 'Role inválida' });
     }
-  
-    // Verifica se username foi fornecido para usuários
-    if (role === 'user' && !username) {
-      return res.status(400).json({ msg: 'Username é obrigatório para usuários' });
-    }
-  
-    // Valida a senha usando a função validaSenha
-    const mensagemValidacao = validaSenha(senha);
-    if (mensagemValidacao.length > 0) {
-      return res.status(400).json({ msg: mensagemValidacao });
-    }
-  
-    // Verifica se senha e senhaConfirmacao são iguais
-    if (senha !== senhaConfirmacao) {
-      return res.status(400).json({ msg: 'A senha e a confirmação de senha não coincidem' });
-    }
-  
-    try {
-      let user;
-  
-      // Cria o usuário com base no papel (role)
-      if (role === 'admin') {
-        user = await Administrador.create({ nome, email, senha: bcrypt.hashSync(senha, 10), role });
-      } else if (role === 'user') {
-        user = await Usuario.create({ nome, email, senha: bcrypt.hashSync(senha, 10), role, username });
-      } else {
-        return res.status(400).json({ msg: 'Role inválida' });
-      }
-  
-      // Gera o token JWT
-      const token = jwt.sign({
-        id: user.id,
-        nome: user.nome,
-        role: user.role
-      }, process.env.JWT_KEY, {
-        expiresIn: "1h"
-      });
-  
-      // Envia o token no cabeçalho da resposta
-      res.status(201).header('Authorization', `Bearer ${token}`).json({ user });
-    } catch (error) {
-      console.error('Erro ao criar usuário:', error);
-      res.status(500).json({ msg: 'Erro ao criar usuário' });
-    }
-  };
+
+    // Gera o token JWT
+    const token = jwt.sign({
+      id: user.id,
+      nome: user.nome,
+      role: user.role
+    }, process.env.JWT_KEY, {
+      expiresIn: "1h"
+    });
+
+    // Envia o token no cabeçalho da resposta
+    res.status(201).header('Authorization', `Bearer ${token}`).json({ user });
+  } catch (error) {
+    console.error('Erro ao criar usuário:', error);
+    res.status(500).json({ msg: 'Erro ao criar usuário' });
+  }
+};
+
   
 // Função para obter token do usuário por ID
 export const getUserTokenById = async (req, res) => {
@@ -110,26 +113,3 @@ export const getUserTokenById = async (req, res) => {
     }
 };
 
-// Função para atualizar um usuário
-export const updateUser = async (req, res) => {
-    const userId = req.params.id;
-    const { nome, email, senha, username } = req.body;
-
-    try {
-        const user = await Usuario.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({ msg: 'Usuário não encontrado' });
-        }
-
-        if (nome) user.nome = nome;
-        if (email) user.email = email;
-        if (senha) user.senha = bcrypt.hashSync(senha, 10);
-        if (username) user.username = username;
-
-        await user.save();
-        res.status(200).json({ msg: 'Usuário atualizado com sucesso', user });
-    } catch (error) {
-        console.error('Erro ao atualizar usuário:', error);
-        res.status(500).json({ msg: 'Erro ao atualizar usuário' });
-    }
-};

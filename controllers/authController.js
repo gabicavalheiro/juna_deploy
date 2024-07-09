@@ -5,35 +5,6 @@ import { Usuario } from '../models/usuario.js';
 import { Administrador } from '../models/administrador.js';
 import bcrypt from 'bcrypt';
 
-export const handleLogin = async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    // Verifica se o usuário existe no modelo Usuario
-    const user = await Usuario.findOne({ where: { username } });
-    if (!user) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    // Verifica a senha
-    const match = await bcrypt.compare(password, user.senha);
-    if (!match) {
-      return res.status(401).json({ error: 'Credenciais inválidas' });
-    }
-
-    // Gera o token de autenticação
-    const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {
-      expiresIn: '1h', // Tempo de expiração do token (opcional)
-    });
-
-    // Retorna o token como resposta
-    res.status(200).json({ token });
-  } catch (error) {
-    console.error('Erro no login:', error);
-    res.status(500).json({ error: 'Erro ao realizar login. Por favor, tente novamente.' });
-  }
-};
-
 export const getUserProfile = async (req, res) => {
   const userId = req.user.id; // Assume que o ID do usuário está no token decodificado (ver middleware de autenticação)
 
@@ -92,3 +63,6 @@ export const getUserByEmailRoute = async (req, res) => {
       res.status(500).json({ msg: 'Erro ao buscar usuário' });
   }
 };
+
+
+
