@@ -3,46 +3,68 @@ import { Usuario } from "../models/usuario.js";
 import { Administrador } from "../models/administrador.js";
 import { Op } from "sequelize";
 
-export const handleSave = async (req, res) => {
-    const { description, tag, time, eventDate } = req.body;
-    const { userId } = req.params; // Captura userId da rota
 
-    if (!description || !tag || !time || !eventDate) {
+export const handleSave = async (req, res) => {
+    const { description, tag, time, eventDate, userId } = req.body;
+    const adminUserId = req.params.userId; // Extrair o adminUserId da rota
+
+    if (!description || !tag || !time || !eventDate || !userId || !adminUserId) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
     }
 
     try {
-        // Verifica se o usuário existe na tabela de usuários
+        // Verifique se o usuário existe
         let user = await Usuario.findByPk(userId);
+        let userType;
 
-        // Se não encontrou na tabela de usuários, verifica na tabela de administradores
-        if (!user) {
+        if (user) {
+            userType = 'usuario';
+        } else {
             user = await Administrador.findByPk(userId);
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário ou administrador não encontrado' });
+            }
+            userType = 'administrador';
         }
 
-        // Se ainda não encontrou, retorna erro
-        if (!user) {
-            return res.status(404).json({ error: 'Usuário ou administrador não encontrado' });
-        }
-
-        // Cria o evento associado ao usuário ou administrador encontrado
+        // Criação do novo evento
         const newEvent = await Event.create({
             description,
             tag,
             time,
             eventDate,
-            usuarioId: userId  // Associa o evento ao usuário ou administrador específico pelo seu ID
+            userId, // ID do usuário selecionado
+            adminUserId, // ID do administrador da rota
+            userType // Tipo de usuário
         });
 
-        res.status(201).json(newEvent);
+        // Aqui você pode salvar o evento também no ID do administrador, se necessário.
+        await Event.create({
+            description,
+            tag,
+            time,
+            eventDate,
+            userId: adminUserId, // Salvando com o ID do administrador
+            adminUserId, // ID do administrador da rota
+            userType: 'administrador' // Marcar como administrador
+        });
+
+        // Obter o nome do usuário
+        const userName = user.nome || user.nome; // O nome deve ser acessado corretamente
+
+        res.status(201).json({ ...newEvent.toJSON(), userId, userName });
     } catch (error) {
         console.error('Erro ao salvar evento:', error);
         res.status(500).json({ error: 'Erro ao salvar evento. Por favor, tente novamente.' });
     }
 };
 
+
+
+
+
 export const getEventsByUserId = async (req, res) => {
-    const { userId } = req.params; // Captura userId da rota
+    const { userId } = req.params; // Corrigido para req.params.userId
 
     try {
         // Verifica se o usuário existe na tabela de usuários
@@ -70,6 +92,7 @@ export const getEventsByUserId = async (req, res) => {
     }
 };
 
+
 export const eventIndex = async (req, res) => {
     try {
         const events = await Event.findAll();
@@ -80,7 +103,10 @@ export const eventIndex = async (req, res) => {
     }
 };
 
+
 export const eventDay = async (req, res) => {
+    const { userId } = req.params; // Captura o userId da rota
+
     try {
         const today = new Date();
         const todayStart = new Date(today.setHours(0, 0, 0, 0));
@@ -88,8 +114,10 @@ export const eventDay = async (req, res) => {
 
         const events = await Event.findAll({
             where: {
+                userId: userId, // Filtra pelos eventos do usuário específico
                 eventDate: {
-                    [Op.between]: [todayStart, todayEnd]
+                    [Op.gte]: todayStart, // Data maior ou igual ao início do dia
+                    [Op.lte]: todayEnd // Data menor ou igual ao final do dia
                 }
             }
         });
@@ -100,6 +128,7 @@ export const eventDay = async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar eventos de hoje' });
     }
 };
+
 
 export const deleteEvent = async (req, res) => {
     const { id } = req.params;

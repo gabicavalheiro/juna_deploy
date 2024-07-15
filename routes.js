@@ -10,6 +10,7 @@ import { updateUserImage } from './controllers/imageController.js';
 import upload from './utils/multerConfig.js';
 import { deleteEvent, eventDay, eventIndex, getEventsByUserId, handleSave } from './controllers/eventController.js';
 import { getUserByEmail, getUserByEmailRoute, getUserProfile } from './controllers/authController.js';
+import { createPublicacao, deletePublicacao, getAllPublicacoes, getPublicacoesByUserId, updatePublicacao } from './controllers/publicacaoController.js';
 
 const router = express.Router();
 
@@ -51,10 +52,15 @@ router.get('/allUsers', getAllUsersAndAdmins) // admin + user
 router.post('/allUsers/:userId/events', handleSave);
 router.get('/allUsers/:userId/events', getEventsByUserId);
 router.get('/events', eventIndex)
-router.get('/eventsDay', eventDay)
+router.get('/allUsers/:userId/events/today', eventDay);
 router.delete('/events/:id', deleteEvent)
 
 
+router.post('/publicacoes/:adminId', createPublicacao); 
+router.put('/publicacoes/:id', updatePublicacao); 
+router.delete('/publicacoes/:id', deletePublicacao); 
+router.get('/publicacoes', getAllPublicacoes); 
+router.get('/user/:userId/publicacoes', getPublicacoesByUserId); // Buscar publicações por ID do usuário
 
 
 router.get('/userProfile', getUserProfile);
