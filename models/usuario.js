@@ -34,6 +34,9 @@ export const Usuario = sequelize.define('usuario', {
   },
   imagemPerfil: {
     type: DataTypes.STRING(200) // Aqui você pode ajustar o tamanho conforme necessário
+  },
+  descricao: {
+    type: DataTypes.STRING(400) // Aqui você pode ajustar o tamanho conforme necessário
   }
 }, {
   tableName: 'usuarios',

@@ -1,3 +1,5 @@
+// models/event.js
+
 import { sequelize } from '../config/db.js';
 import { DataTypes } from 'sequelize';
 import { Usuario } from './usuario.js';
@@ -30,12 +32,17 @@ export const Event = sequelize.define('Event', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    adminId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
     userType: {
         type: DataTypes.STRING,
         allowNull: false,
     }
 });
 
-// Defina as associações após a definição do modelo
-Usuario.hasMany(Event, { foreignKey: 'userId', constraints: false });
-Administrador.hasMany(Event, { foreignKey: 'userId', constraints: false });
+Usuario.hasMany(Event, { foreignKey: 'userId', as: 'userEvents', constraints: false });
+Administrador.hasMany(Event, { foreignKey: 'adminId', as: 'adminEvents', constraints: false });
+Event.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario', constraints: false });
+Event.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador', constraints: false });

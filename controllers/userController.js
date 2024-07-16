@@ -32,25 +32,28 @@ function validaSenha(senha) {
   return mensagem;
 }
 
-// Pegar usuário por ID
 export const userIndex = async (req, res) => {
   const userId = req.params.userId;
 
   try {
+    // Tenta encontrar o usuário pelo ID
     let user = await Usuario.findByPk(userId, {
-      include: [{ model: Event }, { model: Publicacoes }] // Inclui Eventos e Publicações
+      include: [{ model: Event, as: 'userEvents' }, { model: Publicacoes, as: 'publicacoes' }] // Inclui Eventos e Publicações com os aliases corretos
     });
 
+    // Se não encontrar um usuário, tenta encontrar um administrador pelo ID
     if (!user) {
       user = await Administrador.findByPk(userId, {
-        include: [{ model: Event }, { model: Publicacoes }] // Inclui Eventos e Publicações
+        include: [{ model: Event, as: 'adminEvents' }, { model: Publicacoes, as: 'publicacoesAdmin' }] // Inclui Eventos e Publicações com os aliases corretos
       });
     }
 
+    // Se ainda assim não encontrar nenhum usuário ou administrador, retorna um erro 404
     if (!user) {
       return res.status(404).send('Usuário ou Administrador não encontrado');
     }
 
+    // Se encontrou, retorna os dados do usuário/administrador
     res.json(user);
   } catch (error) {
     console.error('Erro ao buscar usuário ou administrador:', error);
@@ -58,34 +61,78 @@ export const userIndex = async (req, res) => {
   }
 };
 
-export const getAllUsersAndAdmins = async (req, res) => {
+
+// Atualizar usuário
+export const updateUser = async (req, res) => {
+  const userId = req.params.id;
+  const { nome, email, senha, imagemPerfil } = req.body;
+
   try {
-    // Buscar todos os usuários com eventos e publicações
-    const users = await Usuario.findAll({
-      include: [{ model: Publicacoes }, { model: Event }] // Inclui Eventos e Publicações
-    });
-
-    // Buscar todos os administradores com eventos e publicações
-    const admins = await Administrador.findAll({
-      include: [{ model: Publicacoes }, { model: Event }] // Inclui Eventos e Publicações
-    });
-
-    // Juntar os usuários e administradores
-    const allUsers = [...users, ...admins];
-
-    // Verificar se não foram encontrados usuários ou administradores
-    if (allUsers.length === 0) {
-      return res.status(404).send('Nenhum usuário ou administrador encontrado');
+    let usuario = await Usuario.findByPk(userId);
+    if (!usuario) {
+      usuario = await Administrador.findByPk(userId);
+      if (!usuario) {
+        return res.status(404).json({ erro: "Usuário não encontrado" });
+      }
     }
 
-    // Retornar a lista combinada de usuários e administradores
-    res.json(allUsers);
+    // Validação de senha se fornecida
+    if (senha) {
+      const validacaoSenha = validaSenha(senha);
+      if (validacaoSenha.length > 0) {
+        return res.status(400).json({ erros: validacaoSenha });
+      }
+      const salt = bcrypt.genSaltSync(12);
+      usuario.senha = bcrypt.hashSync(senha, salt);
+    }
+
+    // Atualizar outros campos somente se fornecidos
+    if (nome) usuario.nome = nome;
+    if (email) usuario.email = email;
+    if (imagemPerfil) usuario.imagemPerfil = imagemPerfil;
+
+    await usuario.save();
+
+    res.status(200).json({ msg: "Usuário atualizado com sucesso", usuario });
   } catch (error) {
-    console.error('Erro ao buscar usuários e administradores:', error);
-    res.status(500).send('Erro interno ao buscar usuários e administradores');
+    console.error('Erro ao atualizar usuário:', error);
+    res.status(500).json({ erro: "Erro ao atualizar usuário", detalhes: error });
   }
 };
 
+
+
+
+export const getAllUsersAndAdmins = async (req, res) => {
+  try {
+      // Buscar todos os usuários com eventos e publicações
+      const users = await Usuario.findAll({
+          include: [
+              { model: Event, as: 'userEvents' },
+              { model: Publicacoes, as: 'publicacoes' }
+          ]
+      });
+
+      // Buscar todos os administradores com eventos e publicações
+      const admins = await Administrador.findAll({
+          include: [
+              { model: Event, as: 'adminEvents' },
+              { model: Publicacoes, as: 'publicacoesAdmin' }
+          ]
+      });
+
+      const allUsers = [...users, ...admins];
+
+      if (allUsers.length === 0) {
+          return res.status(404).send('Nenhum usuário ou administrador encontrado');
+      }
+
+      res.json(allUsers);
+  } catch (error) {
+      console.error('Erro ao buscar usuários e administradores:', error);
+      res.status(500).send('Erro interno ao buscar usuários e administradores');
+  }
+};
 
 // Buscar usuários por papel (role)
 export const userByRole = async (req, res) => {
@@ -100,11 +147,11 @@ export const userByRole = async (req, res) => {
 
     if (role === 'admin') {
       users = await Administrador.findAll({
-        include: [{ model: Event }, { model: Publicacoes }] // Inclui Eventos e Publicações
+        include: [{model: Event, as: 'adminEvents' },{ model: Publicacoes, as: 'publicacoesAdmin' }] // Inclui Eventos e Publicações
       });
     } else {
       users = await Usuario.findAll({
-        include: [{ model: Event }, { model: Publicacoes }] // Inclui Eventos e Publicações
+        include: [{ model: Event, as: 'userEvents'  }, { model: Publicacoes, as: 'publicacoes'}] // Inclui Eventos e Publicações
       });
     }
 
@@ -204,5 +251,58 @@ export const getUserTokenById = async (req, res) => {
   } catch (error) {
     console.error('Erro ao buscar usuário:', error);
     return res.status(500).json({ erro: 'Erro interno ao buscar usuário' });
+  }
+};
+
+
+// Função para adicionar informações adicionais e alterar dados do usuário
+export const updateUserDetails = async (req, res) => {
+  const userId = req.params.userId;
+  const { descricao, username, nome, email, senha, imagemPerfil } = req.body;
+
+  try {
+    let usuario = await Usuario.findByPk(userId);
+    if (!usuario) {
+      usuario = await Administrador.findByPk(userId);
+      if (!usuario) {
+        return res.status(404).json({ erro: "Usuário não encontrado" });
+      }
+    }
+
+    // Adicionar a descrição ao usuário, se fornecida
+    if (descricao) {
+      usuario.descricao = descricao;
+    }
+
+    // Atualizar username, nome, email, imagem de perfil, se fornecidos
+    if (username) {
+      usuario.username = username;
+    }
+    if (nome) {
+      usuario.nome = nome;
+    }
+    if (email) {
+      usuario.email = email;
+    }
+    if (imagemPerfil) {
+      usuario.imagemPerfil = imagemPerfil;
+    }
+
+    // Validar e atualizar senha, se fornecida
+    if (senha) {
+      const validacaoSenha = validaSenha(senha);
+      if (validacaoSenha.length > 0) {
+        return res.status(400).json({ erros: validacaoSenha });
+      }
+      const salt = bcrypt.genSaltSync(12);
+      usuario.senha = bcrypt.hashSync(senha, salt);
+    }
+
+    await usuario.save();
+
+    res.status(200).json({ msg: "Informações do usuário atualizadas com sucesso", usuario });
+  } catch (error) {
+    console.error('Erro ao atualizar informações do usuário:', error);
+    res.status(500).json({ erro: "Erro ao atualizar informações do usuário", detalhes: error });
   }
 };

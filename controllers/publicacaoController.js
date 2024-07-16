@@ -1,14 +1,16 @@
 import { Administrador } from "../models/administrador.js";
 import { Publicacoes } from "../models/publicacoes.js";
 import { Usuario } from "../models/usuario.js";
+import { Event } from "../models/event.js";
 
 
 
+// Exemplo de criação de publicação e evento associado
 export const createPublicacao = async (req, res) => {
-    const { imagens, data, empresa, descricao, plataforma, userId } = req.body;
+    const { imagens, data, empresa, descricao, plataforma, userId, titulo } = req.body;
     const adminId = req.params.adminId; // Extrair o adminId da rota
 
-    if (!imagens || !data || !empresa || !descricao || !plataforma || !userId || !adminId) {
+    if (!imagens || !data || !empresa || !descricao || !plataforma || !userId || !adminId || !titulo) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
     }
 
@@ -33,20 +35,34 @@ export const createPublicacao = async (req, res) => {
             descricao,
             plataforma,
             userId,
+            titulo,
             adminId
         });
 
-        res.status(201).json(newPublicacao);
+        // Criação do evento associado ao calendário
+        const formattedDate = `${new Date(data).getFullYear()}-${String(new Date(data).getMonth() + 1).padStart(2, '0')}-${String(new Date(data).getDate()).padStart(2, '0')}`;
+        const newEvent = await Event.create({
+            description: `Nova publicação: ${descricao}`,
+            tag: 'PUBLICAÇÃO', // Tag específica para publicações
+            time: new Date(data).toLocaleTimeString('pt-BR', { hour: 'numeric', minute: 'numeric' }),
+            eventDate: formattedDate,
+            userId, // ID do usuário responsável pela publicação
+            adminId, // ID do administrador da rota
+            userType: 'usuario' // Tipo de usuário
+        });
+
+        res.status(201).json({ newPublicacao, newEvent });
     } catch (error) {
-        console.error('Erro ao criar publicação:', error);
-        res.status(500).json({ error: 'Erro ao criar publicação. Por favor, tente novamente.' });
+        console.error('Erro ao criar publicação e evento:', error);
+        res.status(500).json({ error: 'Erro ao criar publicação e evento. Por favor, tente novamente.' });
     }
 };
 
 
+
 export const updatePublicacao = async (req, res) => {
     const { id } = req.params;
-    const { imagens, data, empresa, descricao, plataforma, userId, adminId } = req.body;
+    const { imagens, data, empresa, descricao, plataforma, userId, adminId, titulo } = req.body;
 
     try {
         const publicacao = await Publicacoes.findByPk(id);
@@ -54,7 +70,7 @@ export const updatePublicacao = async (req, res) => {
             return res.status(404).json({ error: 'Publicação não encontrada' });
         }
 
-        await publicacao.update({ imagens, data, empresa, descricao, plataforma, userId, adminId });
+        await publicacao.update({ imagens, data, empresa, descricao, plataforma, userId, adminId, titulo });
         res.status(200).json(publicacao);
     } catch (error) {
         console.error('Erro ao atualizar publicação:', error);
@@ -83,7 +99,12 @@ export const deletePublicacao = async (req, res) => {
 
 export const getAllPublicacoes = async (req, res) => {
     try {
-        const publicacoes = await Publicacoes.findAll();
+        const publicacoes = await Publicacoes.findAll({
+            include: [
+                { model: Usuario, as: 'usuario', attributes: ['id', 'nome', 'imagemPerfil'] },
+                { model: Administrador, as: 'administrador', attributes: ['id', 'nome', 'imagemPerfil'] }
+            ]
+        });
         res.status(200).json(publicacoes);
     } catch (error) {
         console.error('Erro ao buscar publicações:', error);
@@ -97,25 +118,21 @@ export const getPublicacoesByUserId = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    // Verifica se o usuário existe na tabela de usuários
     let user = await Usuario.findByPk(userId, {
-      include: [{ model: Publicacoes, as: 'publicacoes' }]  // Inclui publicações associadas ao usuário
+      include: [{ model: Publicacoes, as: 'publicacoes' }]
     });
 
-    // Se não encontrou na tabela de usuários, verifica na tabela de administradores
     if (!user) {
       user = await Administrador.findByPk(userId, {
-        include: [{ model: Publicacoes, as: 'publicacoes' }]  // Inclui publicações associadas ao administrador
+        include: [{ model: Publicacoes, as: 'publicacoesAdmin' }]
       });
     }
 
-    // Se ainda não encontrou, retorna erro
     if (!user) {
       return res.status(404).json({ error: 'Usuário ou administrador não encontrado' });
     }
 
-    // Retorna as publicações associadas ao usuário encontrado
-    res.status(200).json(user.publicacoes);
+    res.status(200).json(user.publicacoes || user.publicacoesAdmin);
   } catch (error) {
     console.error('Erro ao buscar publicações do usuário:', error);
     res.status(500).json({ error: 'Erro ao buscar publicações do usuário. Por favor, tente novamente.' });

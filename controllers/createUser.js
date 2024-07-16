@@ -28,10 +28,10 @@ export const listUsers = async (req, res) => {
 
 
 export const createUser = async (req, res) => {
-  const { nome, email, senha, role, senhaConfirmacao, username } = req.body;
+  const { nome, email, senha, role, senhaConfirmacao, username, imagemPerfil } = req.body;
 
   // Verifica se todos os campos obrigatórios foram fornecidos
-  if (!nome || !email || !senha || !role ) {
+  if (!nome || !email || !senha || !role) {
     return res.status(400).json({ msg: 'Todos os campos são obrigatórios' });
   }
 
@@ -56,9 +56,9 @@ export const createUser = async (req, res) => {
 
     // Cria o usuário com base no papel (role)
     if (role === 'admin') {
-      user = await Administrador.create({ nome, email, senha, role });
+      user = await Administrador.create({ nome, email, senha, role, imagemPerfil });
     } else if (role === 'user') {
-      user = await Usuario.create({ nome, email, senha, role, username });
+      user = await Usuario.create({ nome, email, senha, role, username, imagemPerfil });
     } else {
       return res.status(400).json({ msg: 'Role inválida' });
     }
@@ -79,7 +79,6 @@ export const createUser = async (req, res) => {
     res.status(500).json({ msg: 'Erro ao criar usuário' });
   }
 };
-
   
 // Função para obter token do usuário por ID
 export const getUserTokenById = async (req, res) => {

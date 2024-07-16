@@ -6,76 +6,57 @@ import { Op } from "sequelize";
 
 export const handleSave = async (req, res) => {
     const { description, tag, time, eventDate, userId } = req.body;
-    const adminUserId = req.params.userId; // Extrair o adminUserId da rota
+    const adminId = req.params.adminId; // Extrair o adminId da rota
 
-    if (!description || !tag || !time || !eventDate || !userId || !adminUserId) {
+    if (!description || !tag || !time || !eventDate || !userId || !adminId) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
     }
 
     try {
         // Verifique se o usuário existe
         let user = await Usuario.findByPk(userId);
-        let userType;
-
-        if (user) {
-            userType = 'usuario';
-        } else {
-            user = await Administrador.findByPk(userId);
-            if (!user) {
-                return res.status(404).json({ error: 'Usuário ou administrador não encontrado' });
-            }
-            userType = 'administrador';
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
         }
 
-        // Criação do novo evento
+        // Verifique se o administrador existe
+        let admin = await Administrador.findByPk(adminId);
+        if (!admin) {
+            return res.status(404).json({ error: 'Administrador não encontrado' });
+        }
+
+        // Criação do evento associado ao calendário
         const newEvent = await Event.create({
             description,
             tag,
             time,
             eventDate,
-            userId, // ID do usuário selecionado
-            adminUserId, // ID do administrador da rota
-            userType // Tipo de usuário
+            userId,
+            adminId,
+            userType: admin ? 'administrador' : 'usuario' // Define o tipo de usuário
         });
 
-        // Aqui você pode salvar o evento também no ID do administrador, se necessário.
-        await Event.create({
-            description,
-            tag,
-            time,
-            eventDate,
-            userId: adminUserId, // Salvando com o ID do administrador
-            adminUserId, // ID do administrador da rota
-            userType: 'administrador' // Marcar como administrador
-        });
-
-        // Obter o nome do usuário
-        const userName = user.nome || user.nome; // O nome deve ser acessado corretamente
-
-        res.status(201).json({ ...newEvent.toJSON(), userId, userName });
+        res.status(201).json({ newEvent });
     } catch (error) {
-        console.error('Erro ao salvar evento:', error);
-        res.status(500).json({ error: 'Erro ao salvar evento. Por favor, tente novamente.' });
+        console.error('Erro ao criar evento:', error);
+        res.status(500).json({ error: 'Erro ao criar evento. Por favor, tente novamente.' });
     }
 };
 
 
-
-
-
 export const getEventsByUserId = async (req, res) => {
-    const { userId } = req.params; // Corrigido para req.params.userId
+    const { userId } = req.params;
 
     try {
         // Verifica se o usuário existe na tabela de usuários
         let user = await Usuario.findByPk(userId, {
-            include: [{ model: Event }]  // Inclui eventos associados ao usuário
+            include: [{ model: Event, as: 'userEvents' }] // Carrega os eventos associados como 'userEvents'
         });
 
         // Se não encontrou na tabela de usuários, verifica na tabela de administradores
         if (!user) {
             user = await Administrador.findByPk(userId, {
-                include: [{ model: Event }]  // Inclui eventos associados ao administrador
+                include: [{ model: Event, as: 'adminEvents' }] // Carrega os eventos associados como 'adminEvents'
             });
         }
 
@@ -84,13 +65,47 @@ export const getEventsByUserId = async (req, res) => {
             return res.status(404).json({ error: 'Usuário ou administrador não encontrado' });
         }
 
+        // Acesso aos eventos dependendo do tipo de usuário encontrado
+        let eventos = [];
+        if (user.userType === 'administrador') {
+            eventos = user.adminEvents; // Acessa os eventos associados como 'adminEvents'
+        } else {
+            eventos = user.userEvents; // Acessa os eventos associados como 'userEvents'
+        }
+
         // Retorna os eventos associados ao usuário encontrado
-        res.json(user.Events);
+        res.json(eventos);
     } catch (error) {
         console.error('Erro ao buscar eventos do usuário:', error);
         res.status(500).json({ error: 'Erro ao buscar eventos do usuário. Por favor, tente novamente.' });
     }
 };
+
+export const getEventsByAdminId = async (req, res) => {
+    const { adminId } = req.params;
+
+    try {
+        // Verifica se o administrador existe na tabela de administradores
+        const admin = await Administrador.findByPk(adminId, {
+            include: [{ model: Event, as: 'adminEvents', include: { model: Usuario, as: 'usuario' } }]
+             // Carrega os eventos associados como 'adminEvents'
+        });
+
+        // Se não encontrou o administrador, retorna erro
+        if (!admin) {
+            return res.status(404).json({ error: 'Administrador não encontrado' });
+        }
+
+        // Retorna os eventos associados ao administrador encontrado
+        res.json(admin.adminEvents);
+    } catch (error) {
+        console.error('Erro ao buscar eventos do administrador:', error);
+        res.status(500).json({ error: 'Erro ao buscar eventos do administrador. Por favor, tente novamente.' });
+    }
+};
+
+
+
 
 
 export const eventIndex = async (req, res) => {
@@ -104,23 +119,51 @@ export const eventIndex = async (req, res) => {
 };
 
 
+
 export const eventDay = async (req, res) => {
-    const { userId } = req.params; // Captura o userId da rota
+    const { idType, id } = req.params; // Captura o tipo de ID e o ID da rota
 
     try {
         const today = new Date();
         const todayStart = new Date(today.setHours(0, 0, 0, 0));
         const todayEnd = new Date(today.setHours(23, 59, 59, 999));
 
-        const events = await Event.findAll({
-            where: {
-                userId: userId, // Filtra pelos eventos do usuário específico
-                eventDate: {
-                    [Op.gte]: todayStart, // Data maior ou igual ao início do dia
-                    [Op.lte]: todayEnd // Data menor ou igual ao final do dia
-                }
-            }
-        });
+        let events = [];
+
+        if (idType === 'user') {
+            // Busca eventos do usuário
+            events = await Event.findAll({
+                where: {
+                    userId: id,
+                    eventDate: {
+                        [Op.gte]: todayStart,
+                        [Op.lte]: todayEnd
+                    }
+                },
+                include: [{
+                    model: Usuario, as: 'usuario',
+                    attributes: ['nome'] // Inclui apenas o atributo 'name' do usuário
+                }]
+            });
+        } else if (idType === 'admin') {
+            // Busca eventos do administrador
+            events = await Event.findAll({
+                where: {
+                    adminId: id,
+                    eventDate: {
+                        [Op.gte]: todayStart,
+                        [Op.lte]: todayEnd
+                    }
+                },
+                include: [{
+                    model: Usuario, as: 'usuario',
+                 attributes: ['nome'] // Inclui apenas o atributo 'name' do administrador
+                }]
+                
+            });
+        } else {
+            return res.status(400).json({ error: 'Tipo de ID inválido' });
+        }
 
         res.json(events);
     } catch (error) {

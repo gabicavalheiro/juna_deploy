@@ -4,11 +4,11 @@ import jwt from 'jsonwebtoken'
 import cors from 'cors';
 import { administradorIndex, administradorCreate, administradorDestroy } from './controllers/admController.js';
 import { createUser, listUsers } from './controllers/createUser.js';
-import { getAllUsersAndAdmins, userByRole, userEvent, userIndex, usuarioDestroy } from './controllers/userController.js';
+import { getAllUsersAndAdmins, updateUser, updateUserDetails, userByRole, userEvent, userIndex, usuarioDestroy } from './controllers/userController.js';
 import {  login } from './controllers/loginController.js';
 import { updateUserImage } from './controllers/imageController.js';
 import upload from './utils/multerConfig.js';
-import { deleteEvent, eventDay, eventIndex, getEventsByUserId, handleSave } from './controllers/eventController.js';
+import { deleteEvent, eventDay, eventIndex, getEventsByAdminId, getEventsByUserId, handleSave } from './controllers/eventController.js';
 import { getUserByEmail, getUserByEmailRoute, getUserProfile } from './controllers/authController.js';
 import { createPublicacao, deletePublicacao, getAllPublicacoes, getPublicacoesByUserId, updatePublicacao } from './controllers/publicacaoController.js';
 
@@ -16,12 +16,13 @@ const router = express.Router();
 
 // Configuração do CORS
 router.use(cors({
-    origin: '*', // URL do seu cliente, ou '*' para aceitar todas as origens
-    methods: ['GET', 'POST'], // Métodos HTTP permitidos
-    allowedHeaders: ['Content-Type', 'Authorization'], // Headers permitidos
-    credentials: true, // Permite o envio de credenciais (cookies, por exemplo)
-}));
+    origin: '*', // Ou configure para a origem específica do seu frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // Cabeçalhos permitidos
+    credentials: true, // Habilita o envio de credenciais (cookies, por exemplo)
+  }));
 
+  
 // Rotas públicas
 router.post('/login', login);
 
@@ -34,7 +35,6 @@ router.get('/administradores', administradorIndex);
 router.delete('/administradores/:id', administradorDestroy);
 
 // Rotas para clientes
-router.get('/clientes', userIndex);
 router.delete('/clientes/:id', usuarioDestroy);
 
 router.get('/administradores', administradorIndex);
@@ -43,16 +43,22 @@ router.delete('/administradores/:id',  administradorDestroy);
 
 router.post('/usuarios', createUser);
 router.get('/usuarios', listUsers);
-router.get('/usuarios/:userId', userIndex) //admin + user por ID
-router.get('/allUsers/:role', userByRole) // admin + user por ROLE
-router.get('/allUsers', getAllUsersAndAdmins) // admin + user
+router.get('/usuarios/:userId', userIndex) 
+router.get('/allUsers/:role', userByRole) 
+router.get('/allUsers', getAllUsersAndAdmins) 
+router.put('/usuarios/:id', updateUser); 
+router.put('/updateUserDetails/:userId', updateUserDetails);
 
 
 
-router.post('/allUsers/:userId/events', handleSave);
-router.get('/allUsers/:userId/events', getEventsByUserId);
+
+router.post('/usuarios/:userId/eventos', handleSave);
+router.post('/administradores/:adminId/eventos', handleSave);
+router.get('/usuarios/:userId/eventos', getEventsByUserId);
+router.get('/administradores/:adminId/eventos', getEventsByAdminId);
+
 router.get('/events', eventIndex)
-router.get('/allUsers/:userId/events/today', eventDay);
+router.get('/:idType/:id/events/day', eventDay);
 router.delete('/events/:id', deleteEvent)
 
 
@@ -60,7 +66,7 @@ router.post('/publicacoes/:adminId', createPublicacao);
 router.put('/publicacoes/:id', updatePublicacao); 
 router.delete('/publicacoes/:id', deletePublicacao); 
 router.get('/publicacoes', getAllPublicacoes); 
-router.get('/user/:userId/publicacoes', getPublicacoesByUserId); // Buscar publicações por ID do usuário
+router.get('/user/:userId/publicacoes', getPublicacoesByUserId); 
 
 
 router.get('/userProfile', getUserProfile);
