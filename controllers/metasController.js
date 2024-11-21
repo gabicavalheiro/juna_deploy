@@ -1,4 +1,4 @@
-import { Meta } from "../models/meta";
+import { Meta } from "../models/meta.js";
 
 export const createGoal = async (req, res) => {
     const { title, description, dueDate, platform, userId } = req.body;
