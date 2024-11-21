@@ -21,6 +21,15 @@ export const Meta = sequelize.define('meta', {
       type: DataTypes.DATE,
       allowNull: false,
     },
+    platform: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    userType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+  }
+
   }, {
     tableName: 'metas',
     timestamps: false,
