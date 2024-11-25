@@ -1,8 +1,13 @@
 import { Meta } from "../models/meta.js";
+import { Usuario } from "../models/usuario.js"
+import  { Administrador } from '../models/administrador.js';
 
 export const createGoal = async (req, res) => {
     const { title, description, dueDate, platform, userId } = req.body;
     const adminId = req.params.adminId; // Extrair o adminId da rota
+    console.log(req.body);
+console.log(req.params.adminId);
+
 
     if (!description || !title || !dueDate || !platform || !userId || !adminId) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
@@ -26,8 +31,7 @@ export const createGoal = async (req, res) => {
             platform,
             title,
             userId,
-            adminId,
-            userType: admin ? 'administrador' : 'usuario' // Define o tipo de usuário
+            adminId
         });
 
         res.status(201).json({ newGoal });
@@ -64,3 +68,29 @@ export const deleteGoal = async (req, res) => {
         res.status(500).json({ error: 'Erro ao remover meta. Por favor, tente novamente.' });
     }
 };
+
+
+export const getGoalByUserId = async (req, res) => {
+    const { userId } = req.params;
+  
+    try {
+      let user = await Usuario.findByPk(userId, {
+        include: [{ model: Meta, as: 'meta' }]
+      });
+  
+      if (!user) {
+        user = await Administrador.findByPk(userId, {
+          include: [{ model: Meta, as: 'metaAdmin' }]
+        });
+      }
+  
+      if (!user) {
+        return res.status(404).json({ error: 'Usuário ou administrador não encontrado' });
+      }
+  
+      res.status(200).json(user.meta || user.metaAdmin);
+    } catch (error) {
+      console.error('Erro ao buscar metas do usuário:', error);
+      res.status(500).json({ error: 'Erro ao buscar metas do usuário. Por favor, tente novamente.' });
+    }
+  };

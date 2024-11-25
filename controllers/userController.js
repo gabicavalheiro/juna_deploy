@@ -4,6 +4,7 @@ import { Usuario } from '../models/usuario.js';
 import jwt from 'jsonwebtoken';
 import { Event } from '../models/event.js';
 import { Publicacoes } from '../models/publicacoes.js';
+import { Meta } from '../models/meta.js';
 
 // Validações de senha
 function validaSenha(senha) {
@@ -38,13 +39,15 @@ export const userIndex = async (req, res) => {
   try {
     // Tenta encontrar o usuário pelo ID
     let user = await Usuario.findByPk(userId, {
-      include: [{ model: Event, as: 'userEvents' }, { model: Publicacoes, as: 'publicacoes' }] // Inclui Eventos e Publicações com os aliases corretos
+      include: [{ model: Event, as: 'userEvents' }, { model: Publicacoes, as: 'publicacoes' }, { model: Meta, as: 'metas' }
+      ] // Inclui Eventos e Publicações com os aliases corretos
     });
 
     // Se não encontrar um usuário, tenta encontrar um administrador pelo ID
     if (!user) {
       user = await Administrador.findByPk(userId, {
-        include: [{ model: Event, as: 'adminEvents' }, { model: Publicacoes, as: 'publicacoesAdmin' }] // Inclui Eventos e Publicações com os aliases corretos
+        include: [{ model: Event, as: 'adminEvents' }, { model: Publicacoes, as: 'publicacoesAdmin' },  { model: Meta, as: 'metasAdmin' }
+        ] // Inclui Eventos e Publicações com os aliases corretos
       });
     }
 
@@ -109,7 +112,8 @@ export const getAllUsersAndAdmins = async (req, res) => {
       const users = await Usuario.findAll({
           include: [
               { model: Event, as: 'userEvents' },
-              { model: Publicacoes, as: 'publicacoes' }
+              { model: Publicacoes, as: 'publicacoes' },
+              { model: Meta, as: 'metas' }
           ]
       });
 
@@ -117,7 +121,8 @@ export const getAllUsersAndAdmins = async (req, res) => {
       const admins = await Administrador.findAll({
           include: [
               { model: Event, as: 'adminEvents' },
-              { model: Publicacoes, as: 'publicacoesAdmin' }
+              { model: Publicacoes, as: 'publicacoesAdmin' },
+              { model: Meta, as: 'metasAdmin' }
           ]
       });
 
@@ -147,11 +152,13 @@ export const userByRole = async (req, res) => {
 
     if (role === 'admin') {
       users = await Administrador.findAll({
-        include: [{model: Event, as: 'adminEvents' },{ model: Publicacoes, as: 'publicacoesAdmin' }] // Inclui Eventos e Publicações
+        include: [{model: Event, as: 'adminEvents' },{ model: Publicacoes, as: 'publicacoesAdmin' }, { model: Meta, as: 'metasAdmin' }
+        ] // Inclui Eventos e Publicações
       });
     } else {
       users = await Usuario.findAll({
-        include: [{ model: Event, as: 'userEvents'  }, { model: Publicacoes, as: 'publicacoes'}] // Inclui Eventos e Publicações
+        include: [{ model: Event, as: 'userEvents'  }, { model: Publicacoes, as: 'publicacoes'}, { model: Meta, as: 'metas' }
+        ]  // Inclui Eventos e Publicações
       });
     }
 

@@ -25,15 +25,27 @@ export const Meta = sequelize.define('meta', {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    userType: {
-      type: DataTypes.STRING,
+    userId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: 'usuarios',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE',
+      field: 'userId',
+      constraints: {
+        name: 'fk_metas_usuarios', // Nome explícito para a constraint
+      }
   }
+  
 
   }, {
     tableName: 'metas',
     timestamps: false,
   });
-  
-  Meta.belongsTo(Usuario);
-  Usuario.hasMany(Meta);
+
+
+
+

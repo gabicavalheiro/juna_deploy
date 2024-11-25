@@ -7,6 +7,7 @@ import { Administrador } from './models/administrador.js';
 import { Event } from './models/event.js'; // Adicione esta importação
 import { Publicacoes } from './models/publicacoes.js'; // Adicione esta importação
 import { sequelize } from './config/db.js';
+import { Meta } from './models/meta.js';
 
 dotenv.config();
 
@@ -27,22 +28,29 @@ app.use(routes);
 async function conecta_db() {
   try {
     await sequelize.authenticate();
+
+
+    Usuario.hasMany(Meta, { foreignKey: 'userId', as: 'meta' });
+    Meta.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
+    
     console.log('Conexão com banco de dados realizada com sucesso');
 
-   
-    await Usuario.sync();
-    await Administrador.sync();
+
+    await Usuario.sync(),
+      await Administrador.sync();
     await Event.sync();
     await Publicacoes.sync();
+    await Meta.sync();
     // await sequelize.sync({ alter: true });
 
     // Adicione registros de exemplo se não existirem
-   
+
 
   } catch (error) {
     console.error('Erro na conexão com o banco de dados:', error);
   }
 }
+
 
 conecta_db();
 

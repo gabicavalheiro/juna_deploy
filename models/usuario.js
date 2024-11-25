@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import bcrypt from 'bcrypt';
 import { sequelize } from '../config/db.js';
+import { Meta } from './meta.js';
 
 export const Usuario = sequelize.define('usuario', {
   id: {
@@ -48,4 +49,10 @@ Usuario.beforeCreate(usuario => {
   const salt = bcrypt.genSaltSync(12);
   const hash = bcrypt.hashSync(usuario.senha, salt);
   usuario.senha = hash;
+});
+
+
+Usuario.hasMany(Meta, {
+  foreignKey: 'userId',
+  as: 'metas', // Nome do campo associado
 });

@@ -11,7 +11,7 @@ import upload from './utils/multerConfig.js';
 import { deleteEvent, eventDay, eventIndex, getEventsByAdminId, getEventsByUserId, handleSave } from './controllers/eventController.js';
 import { getUserByEmail, getUserByEmailRoute, getUserProfile } from './controllers/authController.js';
 import { createPublicacao, deletePublicacao, getAllPublicacoes, getPublicacoesByUserId, updatePublicacao } from './controllers/publicacaoController.js';
-import { createGoal, deleteGoal, goalIndex } from './controllers/metasController.js';
+import { createGoal, deleteGoal, getGoalByUserId, goalIndex } from './controllers/metasController.js';
 
 const router = express.Router();
 
@@ -75,8 +75,10 @@ router.get('/userProfile', getUserProfile);
 
 router.post('/upload', upload.single('image'), updateUserImage);
 
-router.post('/usuarios/:userId/metas', createGoal);
+router.post('/metas/:adminId', createGoal);
 router.get('/metas',  goalIndex)
 router.delete('/metas/:id', deleteGoal)
+router.get('/usuario/:userId/metas', getGoalByUserId); 
+
 
 export default router;
