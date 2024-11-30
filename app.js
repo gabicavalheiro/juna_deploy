@@ -36,6 +36,8 @@ async function conecta_db() {
     // Configurar associações
     Usuario.hasMany(Meta, { foreignKey: 'userId', as: 'metas' });
     Meta.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
+    Meta.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
+
 
     Usuario.hasMany(Project, { foreignKey: 'userId', as: 'projetos' });
     Project.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
@@ -55,6 +57,8 @@ async function conecta_db() {
     Project.hasMany(Publicacoes, { foreignKey: 'projectId', as: 'publicacoes' });
     Publicacoes.belongsTo(Project, { foreignKey: 'projectId', as: 'projeto' });
 
+
+    // await Meta.sync({ alter: true });
 
     // Sincronizar os modelos
     // await sequelize.sync({ alter: true }); // Sincroniza todas as tabelas
