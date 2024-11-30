@@ -2,19 +2,27 @@ import { Administrador } from "../models/administrador.js";
 import { Publicacoes } from "../models/publicacoes.js";
 import { Usuario } from "../models/usuario.js";
 import { Event } from "../models/event.js";
+import { Project } from "../models/projeto.js";
 
 
 
 // Exemplo de criação de publicação e evento associado
 export const createPublicacao = async (req, res) => {
-    const { imagens, data, empresa, descricao, plataforma, userId, titulo } = req.body;
-    const adminId = req.params.adminId; // Extrair o adminId da rota
+    const { imagens, data, empresa, descricao, plataforma, userId, titulo, projectId } = req.body;
+    const adminId = req.params.adminId;
 
-    if (!imagens || !data || !empresa || !descricao || !plataforma || !userId || !adminId || !titulo) {
+    // Validação dos campos obrigatórios
+    if (!imagens || !data || !empresa || !descricao || !plataforma || !userId || !titulo || !projectId) {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
     }
 
     try {
+        // Verifique se o projeto existe
+        const project = await Project.findByPk(projectId);
+        if (!project) {
+            return res.status(404).json({ error: `Projeto com ID "${projectId}" não encontrado` });
+        }
+
         // Verifique se o usuário existe
         let user = await Usuario.findByPk(userId);
         if (!user) {
@@ -36,7 +44,8 @@ export const createPublicacao = async (req, res) => {
             plataforma,
             userId,
             titulo,
-            adminId
+            adminId,
+            projectId // Associar a publicação ao projeto
         });
 
         // Criação do evento associado ao calendário
@@ -57,7 +66,6 @@ export const createPublicacao = async (req, res) => {
         res.status(500).json({ error: 'Erro ao criar publicação e evento. Por favor, tente novamente.' });
     }
 };
-
 
 
 export const updatePublicacao = async (req, res) => {
@@ -137,4 +145,88 @@ export const getPublicacoesByUserId = async (req, res) => {
     console.error('Erro ao buscar publicações do usuário:', error);
     res.status(500).json({ error: 'Erro ao buscar publicações do usuário. Por favor, tente novamente.' });
   }
+};
+
+export const addPublicationToProject = async (req, res) => {
+    const { imagens, data, empresa, descricao, plataforma, userId, titulo, projectId } = req.body;
+    const adminId = req.params.adminId; // Extrair adminId da rota
+
+    if (!imagens || !data || !empresa || !descricao || !plataforma || !userId || !adminId || !titulo || !projectId) {
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios!' });
+    }
+
+    try {
+        // Verificar se o projeto existe
+        const project = await Project.findByPk(projectId);
+        if (!project) {
+            return res.status(404).json({ error: `Projeto com ID "${projectId}" não encontrado` });
+        }
+
+        // Verificar se o usuário existe
+        const user = await Usuario.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        // Verificar se o administrador existe
+        const admin = await Administrador.findByPk(adminId);
+        if (!admin) {
+            return res.status(404).json({ error: 'Administrador não encontrado' });
+        }
+
+        // Criar a nova publicação vinculada ao projeto
+        const newPublicacao = await Publicacoes.create({
+            imagens,
+            data,
+            empresa,
+            descricao,
+            plataforma,
+            userId,
+            titulo,
+            adminId,
+            projectId // Associar ao projeto
+        });
+
+        // Criar o evento associado ao calendário
+        const formattedDate = `${new Date(data).getFullYear()}-${String(new Date(data).getMonth() + 1).padStart(2, '0')}-${String(new Date(data).getDate()).padStart(2, '0')}`;
+        const newEvent = await Event.create({
+            description: `Nova publicação no projeto (${project.empresa}): ${descricao}`,
+            tag: 'PUBLICAÇÃO',
+            time: new Date(data).toLocaleTimeString('pt-BR', { hour: 'numeric', minute: 'numeric' }),
+            eventDate: formattedDate,
+            userId,
+            adminId,
+            userType: 'usuario'
+        });
+
+        res.status(201).json({
+            message: 'Publicação adicionada ao projeto com sucesso!',
+            project,
+            newPublicacao,
+            newEvent
+        });
+    } catch (error) {
+        console.error('Erro ao adicionar publicação ao projeto:', error);
+        res.status(500).json({ error: 'Erro ao adicionar publicação ao projeto. Por favor, tente novamente.' });
+    }
+};
+
+
+export const getPublicacoesByProjectId = async (req, res) => {
+    const { projectId } = req.params;
+
+    try {
+        const project = await Project.findByPk(projectId, {
+            include: [{ model: Publicacoes, as: 'publicacoes' }] // Alias correto
+        });
+
+        if (!project) {
+            return res.status(404).json({ error: 'Projeto não encontrado' });
+        }
+
+        res.status(200).json(project.publicacoes);
+    } catch (error) {
+        console.error('Erro ao buscar publicações do projeto:', error);
+        res.status(500).json({ error: 'Erro ao buscar publicações do projeto. Por favor, tente novamente.' });
+    }
 };

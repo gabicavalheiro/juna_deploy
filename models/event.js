@@ -42,7 +42,4 @@ export const Event = sequelize.define('Event', {
     }
 });
 
-Usuario.hasMany(Event, { foreignKey: 'userId', as: 'userEvents', constraints: false });
-Administrador.hasMany(Event, { foreignKey: 'adminId', as: 'adminEvents', constraints: false });
-Event.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario', constraints: false });
-Event.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador', constraints: false });
+

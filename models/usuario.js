@@ -2,6 +2,9 @@ import { DataTypes } from 'sequelize';
 import bcrypt from 'bcrypt';
 import { sequelize } from '../config/db.js';
 import { Meta } from './meta.js';
+import { Project } from './projeto.js';
+import { Publicacoes } from './publicacoes.js';
+import { Event } from './event.js';
 
 export const Usuario = sequelize.define('usuario', {
   id: {
@@ -28,16 +31,16 @@ export const Usuario = sequelize.define('usuario', {
   },
   role: {
     type: DataTypes.ENUM('admin', 'user'),
-    allowNull: false,
+    allowNull: false
   },
   senhaConfirmacao: {
-    type: DataTypes.STRING(250),
+    type: DataTypes.STRING(250)
   },
   imagemPerfil: {
-    type: DataTypes.STRING(200) // Aqui você pode ajustar o tamanho conforme necessário
+    type: DataTypes.STRING(200)
   },
   descricao: {
-    type: DataTypes.STRING(400) // Aqui você pode ajustar o tamanho conforme necessário
+    type: DataTypes.STRING(400)
   }
 }, {
   tableName: 'usuarios',
@@ -45,14 +48,10 @@ export const Usuario = sequelize.define('usuario', {
   paranoid: true
 });
 
+// Hook para hashear a senha antes de salvar
 Usuario.beforeCreate(usuario => {
   const salt = bcrypt.genSaltSync(12);
-  const hash = bcrypt.hashSync(usuario.senha, salt);
-  usuario.senha = hash;
+  usuario.senha = bcrypt.hashSync(usuario.senha, salt);
 });
 
 
-Usuario.hasMany(Meta, {
-  foreignKey: 'userId',
-  as: 'metas', // Nome do campo associado
-});

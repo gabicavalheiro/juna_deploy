@@ -50,7 +50,7 @@ export const getEventsByUserId = async (req, res) => {
     try {
         // Verifica se o usuário existe na tabela de usuários
         let user = await Usuario.findByPk(userId, {
-            include: [{ model: Event, as: 'userEvents' }] // Carrega os eventos associados como 'userEvents'
+            include: [{ model: Event, as: 'eventos' }] // Carrega os eventos associados como 'userEvents'
         });
 
         // Se não encontrou na tabela de usuários, verifica na tabela de administradores

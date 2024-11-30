@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { Event } from '../models/event.js';
 import { Publicacoes } from '../models/publicacoes.js';
 import { Meta } from '../models/meta.js';
+import { Project } from '../models/projeto.js';
 
 // Validações de senha
 function validaSenha(senha) {
@@ -37,32 +38,37 @@ export const userIndex = async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    // Tenta encontrar o usuário pelo ID
     let user = await Usuario.findByPk(userId, {
-      include: [{ model: Event, as: 'userEvents' }, { model: Publicacoes, as: 'publicacoes' }, { model: Meta, as: 'metas' }
-      ] // Inclui Eventos e Publicações com os aliases corretos
+      include: [
+        { model: Event, as: 'eventos' },
+        { model: Publicacoes, as: 'publicacoes' },
+        { model: Meta, as: 'metas' },
+        { model: Project, as: 'projetos' } // Alias correto
+      ]
     });
 
-    // Se não encontrar um usuário, tenta encontrar um administrador pelo ID
     if (!user) {
       user = await Administrador.findByPk(userId, {
-        include: [{ model: Event, as: 'adminEvents' }, { model: Publicacoes, as: 'publicacoesAdmin' },  { model: Meta, as: 'metasAdmin' }
-        ] // Inclui Eventos e Publicações com os aliases corretos
+        include: [
+          { model: Event, as: 'adminEvents' },
+          { model: Publicacoes, as: 'publicacoesAdmin' },
+          { model: Meta, as: 'metasAdmin' },
+          { model: Project, as: 'projetosAdmin' } // Alias correto
+        ]
       });
     }
 
-    // Se ainda assim não encontrar nenhum usuário ou administrador, retorna um erro 404
     if (!user) {
       return res.status(404).send('Usuário ou Administrador não encontrado');
     }
 
-    // Se encontrou, retorna os dados do usuário/administrador
     res.json(user);
   } catch (error) {
     console.error('Erro ao buscar usuário ou administrador:', error);
     res.status(500).send('Erro interno ao buscar usuário ou administrador');
   }
 };
+
 
 
 // Atualizar usuário
@@ -108,36 +114,37 @@ export const updateUser = async (req, res) => {
 
 export const getAllUsersAndAdmins = async (req, res) => {
   try {
-      // Buscar todos os usuários com eventos e publicações
-      const users = await Usuario.findAll({
-          include: [
-              { model: Event, as: 'userEvents' },
-              { model: Publicacoes, as: 'publicacoes' },
-              { model: Meta, as: 'metas' }
-          ]
-      });
+    const users = await Usuario.findAll({
+      include: [
+        { model: Event, as: 'eventos' },
+        { model: Publicacoes, as: 'publicacoes' },
+        { model: Meta, as: 'metas' },
+        { model: Project, as: 'projetos' } // Alias correto
+      ]
+    });
 
-      // Buscar todos os administradores com eventos e publicações
-      const admins = await Administrador.findAll({
-          include: [
-              { model: Event, as: 'adminEvents' },
-              { model: Publicacoes, as: 'publicacoesAdmin' },
-              { model: Meta, as: 'metasAdmin' }
-          ]
-      });
+    const admins = await Administrador.findAll({
+      include: [
+        { model: Event, as: 'adminEvents' },
+        { model: Publicacoes, as: 'publicacoesAdmin' },
+        { model: Meta, as: 'metasAdmin' },
+        { model: Project, as: 'projetosAdmin' } // Alias correto
+      ]
+    });
 
-      const allUsers = [...users, ...admins];
+    const allUsers = [...users, ...admins];
 
-      if (allUsers.length === 0) {
-          return res.status(404).send('Nenhum usuário ou administrador encontrado');
-      }
+    if (allUsers.length === 0) {
+      return res.status(404).send('Nenhum usuário ou administrador encontrado');
+    }
 
-      res.json(allUsers);
+    res.json(allUsers);
   } catch (error) {
-      console.error('Erro ao buscar usuários e administradores:', error);
-      res.status(500).send('Erro interno ao buscar usuários e administradores');
+    console.error('Erro ao buscar usuários e administradores:', error);
+    res.status(500).send('Erro interno ao buscar usuários e administradores');
   }
 };
+
 
 // Buscar usuários por papel (role)
 export const userByRole = async (req, res) => {
@@ -152,13 +159,21 @@ export const userByRole = async (req, res) => {
 
     if (role === 'admin') {
       users = await Administrador.findAll({
-        include: [{model: Event, as: 'adminEvents' },{ model: Publicacoes, as: 'publicacoesAdmin' }, { model: Meta, as: 'metasAdmin' }
-        ] // Inclui Eventos e Publicações
+        include: [
+          { model: Event, as: 'adminEvents' },
+          { model: Publicacoes, as: 'publicacoesAdmin' },
+          { model: Meta, as: 'metasAdmin' },
+          { model: Project, as: 'projetosAdmin' } // Alias correto
+        ]
       });
     } else {
       users = await Usuario.findAll({
-        include: [{ model: Event, as: 'userEvents'  }, { model: Publicacoes, as: 'publicacoes'}, { model: Meta, as: 'metas' }
-        ]  // Inclui Eventos e Publicações
+        include: [
+          { model: Event, as: 'eventos' },
+          { model: Publicacoes, as: 'publicacoes' },
+          { model: Meta, as: 'metas' },
+          { model: Project, as: 'projetos' } // Alias correto
+        ]
       });
     }
 

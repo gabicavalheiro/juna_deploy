@@ -10,8 +10,9 @@ import { updateUserImage } from './controllers/imageController.js';
 import upload from './utils/multerConfig.js';
 import { deleteEvent, eventDay, eventIndex, getEventsByAdminId, getEventsByUserId, handleSave } from './controllers/eventController.js';
 import { getUserByEmail, getUserByEmailRoute, getUserProfile } from './controllers/authController.js';
-import { createPublicacao, deletePublicacao, getAllPublicacoes, getPublicacoesByUserId, updatePublicacao } from './controllers/publicacaoController.js';
+import { addPublicationToProject, createPublicacao, deletePublicacao, getAllPublicacoes, getPublicacoesByUserId, updatePublicacao } from './controllers/publicacaoController.js';
 import { createGoal, deleteGoal, getGoalByUserId, goalIndex } from './controllers/metasController.js';
+import { createProject, deleteProject, getProjectByUserId, projectIndex } from './controllers/projetosController.js';
 
 const router = express.Router();
 
@@ -45,7 +46,7 @@ router.delete('/administradores/:id',  administradorDestroy);
 router.post('/usuarios', createUser);
 router.get('/usuarios', listUsers);
 router.get('/usuarios/:userId', userIndex) 
-router.get('/allUsers/:role', userByRole) 
+router.get('/allUsers/:role', userByRole)  // usuario por ocupação - admin/user
 router.get('/allUsers', getAllUsersAndAdmins) 
 router.put('/usuarios/:id', updateUser); 
 router.put('/updateUserDetails/:userId', updateUserDetails);
@@ -79,6 +80,14 @@ router.post('/metas/:adminId', createGoal);
 router.get('/metas',  goalIndex)
 router.delete('/metas/:id', deleteGoal)
 router.get('/usuario/:userId/metas', getGoalByUserId); 
+
+
+router.post('/projetos/:adminId', createProject);
+router.get('/projetos',  projectIndex)
+router.delete('/projetos/:id', deleteProject)
+router.get('/usuario/:userId/projetos', getProjectByUserId); 
+router.post('/projetos/publicacoes/:adminId', addPublicationToProject);
+
 
 
 export default router;

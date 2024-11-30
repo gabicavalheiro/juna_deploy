@@ -8,6 +8,7 @@ import { Event } from './models/event.js'; // Adicione esta importação
 import { Publicacoes } from './models/publicacoes.js'; // Adicione esta importação
 import { sequelize } from './config/db.js';
 import { Meta } from './models/meta.js';
+import { Project } from './models/projeto.js';
 
 dotenv.config();
 
@@ -27,31 +28,41 @@ app.use(routes);
 
 async function conecta_db() {
   try {
-    await sequelize.authenticate();
 
-
-    Usuario.hasMany(Meta, { foreignKey: 'userId', as: 'meta' });
-    Meta.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
     
+    await sequelize.authenticate();
     console.log('Conexão com banco de dados realizada com sucesso');
 
+    // Configurar associações
+    Usuario.hasMany(Meta, { foreignKey: 'userId', as: 'metas' });
+    Meta.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
 
-    await Usuario.sync(),
-      await Administrador.sync();
-    await Event.sync();
-    await Publicacoes.sync();
-    await Meta.sync();
-    // await sequelize.sync({ alter: true });
+    Usuario.hasMany(Project, { foreignKey: 'userId', as: 'projetos' });
+    Project.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
 
-    // Adicione registros de exemplo se não existirem
+    Usuario.hasMany(Event, { foreignKey: 'userId', as: 'eventos' });
+    Event.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
+
+    Usuario.hasMany(Publicacoes, { foreignKey: 'userId', as: 'publicacoes' });
+    Publicacoes.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
+
+    Administrador.hasMany(Project, { foreignKey: 'adminId', as: 'projetosAdmin' });
+    Project.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
+
+    Administrador.hasMany(Publicacoes, { foreignKey: 'adminId', as: 'publicacoesAdmin' });
+    Publicacoes.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
+
+    Project.hasMany(Publicacoes, { foreignKey: 'projectId', as: 'publicacoes' });
+    Publicacoes.belongsTo(Project, { foreignKey: 'projectId', as: 'projeto' });
 
 
+    // Sincronizar os modelos
+    // await sequelize.sync({ alter: true }); // Sincroniza todas as tabelas
+    console.log('Sincronização com o banco de dados concluída');
   } catch (error) {
     console.error('Erro na conexão com o banco de dados:', error);
   }
 }
-
-
 conecta_db();
 
 app.get('/', (req, res) => {
