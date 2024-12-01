@@ -14,6 +14,7 @@ import { addPublicationToProject, createPublicacao, deletePublicacao, getAllPubl
 import { createGoal, deleteGoal, getGoalByUserId, goalIndex } from './controllers/metasController.js';
 import { createProject, deleteProject, getProjectByUserId, projectIndex } from './controllers/projetosController.js';
 import { handleWebhookEvent, validateWebhook } from './controllers/webhookController.js';
+import { instagramAuthCallback } from './controllers/instagramController.js';
 
 const router = express.Router();
 
@@ -92,6 +93,6 @@ router.post('/projetos/publicacoes/:adminId', addPublicationToProject);
 router.get('/webhook', validateWebhook); // Endpoint GET para validação
 router.post('/webhook', handleWebhookEvent); // Endpoint POST para eventos
 
-
+router.get('/auth/instagram/callback', instagramAuthCallback);
 
 export default router;
