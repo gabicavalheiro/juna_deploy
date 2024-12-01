@@ -13,6 +13,7 @@ import { getUserByEmail, getUserByEmailRoute, getUserProfile } from './controlle
 import { addPublicationToProject, createPublicacao, deletePublicacao, getAllPublicacoes, getPublicacoesByUserId, updatePublicacao } from './controllers/publicacaoController.js';
 import { createGoal, deleteGoal, getGoalByUserId, goalIndex } from './controllers/metasController.js';
 import { createProject, deleteProject, getProjectByUserId, projectIndex } from './controllers/projetosController.js';
+import { handleWebhookEvent, validateWebhook } from './controllers/webhookController.js';
 
 const router = express.Router();
 
@@ -87,6 +88,9 @@ router.get('/projetos',  projectIndex)
 router.delete('/projetos/:id', deleteProject)
 router.get('/usuario/:userId/projetos', getProjectByUserId); 
 router.post('/projetos/publicacoes/:adminId', addPublicationToProject);
+
+router.get('/webhook', validateWebhook); // Endpoint GET para validação
+router.post('/webhook', handleWebhookEvent); // Endpoint POST para eventos
 
 
 
