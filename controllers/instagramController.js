@@ -17,18 +17,35 @@ export const instagramAuthCallback = async (req, res) => {
             redirect_uri: 'https://junadeploy-production.up.railway.app/auth/instagram/callback', // Certifique-se que coincide com o configurado no Meta Dashboard
             code,
         });
-        console.log('Código recebido:', req.query.code);
-        console.log('Client ID:', process.env.INSTAGRAM_CLIENT_ID);
-        console.log('Client Secret:', process.env.INSTAGRAM_CLIENT_SECRET);
+
+        if (!process.env.INSTAGRAM_CLIENT_ID || !process.env.INSTAGRAM_CLIENT_SECRET) {
+            console.error('Variáveis de ambiente INSTAGRAM_CLIENT_ID ou INSTAGRAM_CLIENT_SECRET não configuradas.');
+            return res.status(500).send('Erro de configuração no servidor');
+        }
 
 
         const { access_token, user_id } = response.data;
 
+        console.log('Código de autorização recebido:', code);
+        console.log('Enviando solicitação para https://api.instagram.com/oauth/access_token');
+
+
         // Responda com o token de acesso e o ID do usuário
         res.status(200).json({ access_token, user_id });
     } catch (error) {
-        console.error('Erro ao obter o token de acesso:', error.response ? error.response.data : error.message);
-        res.status(500).send('Erro ao obter o token de acesso');
-      }
-      
+        if (error.response) {
+            console.error('Erro na resposta da API do Instagram:', error.response.data);
+            res.status(error.response.status).json({
+                error: error.response.data.error_message || 'Erro desconhecido na resposta da API do Instagram',
+            });
+        } else if (error.request) {
+            console.error('Erro na solicitação à API do Instagram:', error.request);
+            res.status(500).json({ error: 'Erro na solicitação à API do Instagram' });
+        } else {
+            console.error('Erro inesperado:', error.message);
+            res.status(500).json({ error: 'Erro inesperado ao processar o token de acesso' });
+        }
+    }
+
+
 };
