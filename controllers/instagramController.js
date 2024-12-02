@@ -10,10 +10,14 @@ console.log('Client Secret:', process.env.INSTAGRAM_CLIENT_SECRET);
 
 
 
+
 // Controlador para tratar o redirecionamento do Instagram
 export const instagramAuthCallback = async (req, res) => {
+    console.log('Recebendo código:', code);
     console.log('Client ID:', process.env.INSTAGRAM_CLIENT_ID);
     console.log('Client Secret:', process.env.INSTAGRAM_CLIENT_SECRET);
+    console.log('Redirect URI:', 'https://junadeploy-production.up.railway.app/auth/instagram/callback');
+
 
     // Verifique se as variáveis de ambiente estão configuradas corretamente
     if (!process.env.INSTAGRAM_CLIENT_ID || !process.env.INSTAGRAM_CLIENT_SECRET) {
