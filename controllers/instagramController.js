@@ -1,4 +1,17 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
+import qs from 'qs';
+
+dotenv.config();
+
+console.log('Client ID:', process.env.INSTAGRAM_CLIENT_ID);
+console.log('Client Secret:', process.env.INSTAGRAM_CLIENT_SECRET);
+
+if (!process.env.INSTAGRAM_CLIENT_ID || !process.env.INSTAGRAM_CLIENT_SECRET) {
+    return res.status(500).json({ error: 'Variáveis de ambiente não configuradas corretamente' });
+}
+
+
 
 // Controlador para tratar o redirecionamento do Instagram
 export const instagramAuthCallback = async (req, res) => {
