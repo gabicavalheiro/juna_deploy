@@ -1,11 +1,12 @@
 import axios from 'axios';
+import qs from 'qs'; // Adicionar o pacote qs para formatar o corpo da requisição
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 // Controlador para tratar o redirecionamento do Instagram
 export const instagramAuthCallback = async (req, res) => {
-    const { code } = req.query; // Certifique-se de que a variável `code` é declarada antes de usá-la.
+    const { code } = req.query;
 
     console.log('Recebendo código:', code);
     console.log('Client ID:', process.env.INSTAGRAM_CLIENT_ID);
@@ -23,13 +24,20 @@ export const instagramAuthCallback = async (req, res) => {
 
     try {
         // Trocar o código de autorização por um token de acesso
-        const response = await axios.post('https://api.instagram.com/oauth/access_token', {
-            client_id: process.env.INSTAGRAM_CLIENT_ID,
-            client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
-            grant_type: process.env.AUTHORIZATION_CODE,
-            redirect_uri: 'https://junadeploy-production.up.railway.app/auth/instagram/callback', // Certifique-se que coincide com o configurado no Meta Dashboard
-            code,
-        });
+        const response = await axios.post('https://api.instagram.com/oauth/access_token', 
+            qs.stringify({
+                client_id: process.env.INSTAGRAM_CLIENT_ID,
+                client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
+                grant_type: 'authorization_code',
+                redirect_uri: 'https://junadeploy-production.up.railway.app/auth/instagram/callback', // Certifique-se que coincide com o configurado no Meta Dashboard
+                code,
+            }),
+            {
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }
+        );
 
         const { access_token, user_id } = response.data;
 
