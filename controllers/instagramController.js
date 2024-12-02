@@ -28,7 +28,7 @@ export const instagramAuthCallback = async (req, res) => {
             qs.stringify({
                 client_id: process.env.INSTAGRAM_CLIENT_ID,
                 client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
-                grant_type: 'authorization_code',
+                grant_type: process.env.AUTHORIZATHION_CODE,
                 redirect_uri: 'https://junadeploy-production.up.railway.app/auth/instagram/callback', // Certifique-se que coincide com o configurado no Meta Dashboard
                 code,
             }),
