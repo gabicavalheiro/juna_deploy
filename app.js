@@ -44,6 +44,8 @@ async function conecta_db() {
 
     Usuario.hasMany(Event, { foreignKey: 'userId', as: 'eventos' });
     Event.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
+    Event.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
+
 
     Usuario.hasMany(Publicacoes, { foreignKey: 'userId', as: 'publicacoes' });
     Publicacoes.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
