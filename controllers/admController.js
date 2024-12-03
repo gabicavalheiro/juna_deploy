@@ -1,5 +1,8 @@
 import bcrypt from "bcrypt";
 import { Administrador } from "../models/administrador.js";
+import { Meta } from "../models/meta.js";
+import { Project } from "../models/projeto.js";
+import { Event } from "../models/event.js";
 
 // Função para validar senha
 function validaSenha(senha) {
@@ -10,7 +13,10 @@ function validaSenha(senha) {
   }
 
   // Contadores
-  let pequenas = 0, grandes = 0, numeros = 0, simbolos = 0;
+  let pequenas = 0,
+    grandes = 0,
+    numeros = 0,
+    simbolos = 0;
 
   // Verifica os caracteres da senha
   for (const letra of senha) {
@@ -29,10 +35,28 @@ function validaSenha(senha) {
   return mensagem;
 }
 
-// Listar todos os administradores
+// Listar todos os administradores com metas, projetos e eventos
 export const administradorIndex = async (req, res) => {
   try {
-    const administradores = await Administrador.findAll();
+    const administradores = await Administrador.findAll({
+      include: [
+        {
+          model: Meta,
+          as: "metas",
+          attributes: ["id", "descricao", "userId", "adminId"],
+        },
+        {
+          model: Project,
+          as: "projetosAdmin",
+          attributes: ["id", "nome", "descricao", "userId", "adminId"],
+        },
+        {
+          model: Event,
+          as: "eventos",
+          attributes: ["id", "nome", "descricao", "data", "userId", "adminId"],
+        },
+      ],
+    });
     res.status(200).json(administradores);
   } catch (error) {
     console.error("Erro ao listar administradores:", error);
