@@ -106,3 +106,39 @@ export const getProjectByUserId = async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar projetos do usuário. Por favor, tente novamente.' });
     }
 };
+
+
+export const getProjectById = async (req, res) => {
+    const { id } = req.params; // Extrai o ID do projeto a partir dos parâmetros da rota
+
+    try {
+        const project = await Project.findByPk(id, {
+            include: [
+                {
+                    model: Publicacoes,
+                    as: 'publicacoes', // Alias definido na associação
+                    attributes: ['id', 'titulo', 'descricao', 'data'], // Campos desejados das publicações
+                },
+                {
+                    model: Usuario,
+                    as: 'usuario', // Alias definido para o usuário vinculado
+                    attributes: ['id', 'username', 'imagemPerfil'], // Campos desejados do usuário
+                },
+                {
+                    model: Administrador,
+                    as: 'administrador', // Alias definido para o administrador vinculado
+                    attributes: ['id', 'imagemPerfil'], // Campos desejados do administrador
+                },
+            ],
+        });
+
+        if (!project) {
+            return res.status(404).json({ error: 'Projeto não encontrado' });
+        }
+
+        res.status(200).json(project);
+    } catch (error) {
+        console.error('Erro ao buscar projeto por ID:', error);
+        res.status(500).json({ error: 'Erro ao buscar projeto. Por favor, tente novamente.' });
+    }
+};

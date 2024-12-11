@@ -50,10 +50,11 @@ export const userIndex = async (req, res) => {
     if (!user) {
       user = await Administrador.findByPk(userId, {
         include: [
-          { model: Event, as: 'adminEvents' },
           { model: Publicacoes, as: 'publicacoesAdmin' },
           { model: Meta, as: 'metasAdmin' },
-          { model: Project, as: 'projetosAdmin' } // Alias correto
+          { model: Project, as: 'projetosAdmin' }, // Alias correto
+          { model: Event, as: 'eventosAdmin' }, // Alias correto
+
         ]
       });
     }
@@ -116,19 +117,22 @@ export const getAllUsersAndAdmins = async (req, res) => {
   try {
     const users = await Usuario.findAll({
       include: [
-        { model: Event, as: 'eventos' },
         { model: Publicacoes, as: 'publicacoes' },
         { model: Meta, as: 'metas' },
-        { model: Project, as: 'projetos' } // Alias correto
+        { model: Project, as: 'projetos' }, 
+        { model: Event, as: 'eventos' } // Alias correto
+
+        
       ]
     });
 
     const admins = await Administrador.findAll({
       include: [
-        { model: Event, as: 'adminEvents' },
         { model: Publicacoes, as: 'publicacoesAdmin' },
         { model: Meta, as: 'metasAdmin' },
-        { model: Project, as: 'projetosAdmin' } // Alias correto
+        { model: Project, as: 'projetosAdmin' }, 
+        { model: Event, as: 'eventosAdmin' } // Alias correto
+
       ]
     });
 
@@ -163,7 +167,8 @@ export const userByRole = async (req, res) => {
           { model: Event, as: 'adminEvents' },
           { model: Publicacoes, as: 'publicacoesAdmin' },
           { model: Meta, as: 'metasAdmin' },
-          { model: Project, as: 'projetosAdmin' } // Alias correto
+          { model: Project, as: 'projetosAdmin' }, // Alias correto
+          { model: Event, as: 'eventosAdmin' } // Alias correto
         ]
       });
     } else {
@@ -172,7 +177,8 @@ export const userByRole = async (req, res) => {
           { model: Event, as: 'eventos' },
           { model: Publicacoes, as: 'publicacoes' },
           { model: Meta, as: 'metas' },
-          { model: Project, as: 'projetos' } // Alias correto
+          { model: Project, as: 'projetos' }, // Alias correto
+          { model: Event, as: 'eventos' } // Alias correto
         ]
       });
     }

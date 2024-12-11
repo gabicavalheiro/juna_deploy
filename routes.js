@@ -11,8 +11,8 @@ import upload from './utils/multerConfig.js';
 import { deleteEvent, eventDay, eventIndex, getEventsByAdminId, getEventsByUserId, handleSave } from './controllers/eventController.js';
 import { getUserByEmail, getUserByEmailRoute, getUserProfile } from './controllers/authController.js';
 import { addPublicationToProject, createPublicacao, deletePublicacao, getAllPublicacoes, getPublicacoesByUserId, updatePublicacao } from './controllers/publicacaoController.js';
-import { createGoal, deleteGoal, getGoalByUserId, goalIndex } from './controllers/metasController.js';
-import { createProject, deleteProject, getProjectByUserId, projectIndex } from './controllers/projetosController.js';
+import { createGoal, deleteGoal, getCompletedGoals, getGoalByUserId, getGoalsByAdminId, getWeeklyGoals, goalIndex, markGoalAsCompleted, markGoalAsPending } from './controllers/metasController.js';
+import { createProject, deleteProject, getProjectById, getProjectByUserId, projectIndex } from './controllers/projetosController.js';
 import { handleWebhookEvent, validateWebhook } from './controllers/webhookController.js';
 import { instagramAuthCallback } from './controllers/instagramController.js';
 
@@ -82,6 +82,12 @@ router.post('/metas/:adminId', createGoal);
 router.get('/metas',  goalIndex)
 router.delete('/metas/:id', deleteGoal)
 router.get('/usuario/:userId/metas', getGoalByUserId); 
+router.put('/metas/:id/concluir', markGoalAsCompleted);
+router.get('/meta/admin/:adminId', getGoalsByAdminId);
+router.get('/metas/admin/:adminId/concluidas', getCompletedGoals);
+router.get('/metas/admin/:adminId/semana', getWeeklyGoals);
+router.put('/metas/:id/pendente', markGoalAsPending);
+
 
 
 router.post('/projetos/:adminId', createProject);
@@ -94,5 +100,10 @@ router.get('/webhook', validateWebhook); // Endpoint GET para validação
 router.post('/webhook', handleWebhookEvent); // Endpoint POST para eventos
 
 router.get('/auth/instagram/callback', instagramAuthCallback);
+
+router.get('/projetos/:id', getProjectById);
+
+
+
 
 export default router;

@@ -29,7 +29,7 @@ app.use(routes);
 async function conecta_db() {
   try {
 
-    
+
     await sequelize.authenticate();
     console.log('Conexão com banco de dados realizada com sucesso');
 
@@ -37,25 +37,22 @@ async function conecta_db() {
     Usuario.hasMany(Meta, { foreignKey: 'userId', as: 'metas' });
     Meta.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
     Meta.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
-
-
-    Usuario.hasMany(Project, { foreignKey: 'userId', as: 'projetos' });
-    Project.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
+    Administrador.hasMany(Meta, { foreignKey: 'adminId', as: 'metasAdmin' });
 
     Usuario.hasMany(Event, { foreignKey: 'userId', as: 'eventos' });
     Event.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
     Event.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
-
+    Administrador.hasMany(Event, { foreignKey: 'adminId', as: 'eventosAdmin' });
 
     Usuario.hasMany(Publicacoes, { foreignKey: 'userId', as: 'publicacoes' });
     Publicacoes.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
-
-    Administrador.hasMany(Project, { foreignKey: 'adminId', as: 'projetosAdmin' });
-    Project.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
-
     Administrador.hasMany(Publicacoes, { foreignKey: 'adminId', as: 'publicacoesAdmin' });
     Publicacoes.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
 
+    Administrador.hasMany(Project, { foreignKey: 'adminId', as: 'projetosAdmin' });
+    Project.belongsTo(Administrador, { foreignKey: 'adminId', as: 'administrador' });
+    Usuario.hasMany(Project, { foreignKey: 'userId', as: 'projetos' });
+    Project.belongsTo(Usuario, { foreignKey: 'userId', as: 'usuario' });
     Project.hasMany(Publicacoes, { foreignKey: 'projectId', as: 'publicacoes' });
     Publicacoes.belongsTo(Project, { foreignKey: 'projectId', as: 'projeto' });
 

@@ -24,6 +24,11 @@ export const Meta = sequelize.define('meta', {
         type: DataTypes.DATE,
         allowNull: false,
     },
+    concluido: {
+        type: DataTypes.BOOLEAN, // Campo booleano para indicar se está completo ou não
+        defaultValue: false,     // Valor padrão: falso (não concluído)
+        allowNull: false,
+    },
     userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -33,16 +38,15 @@ export const Meta = sequelize.define('meta', {
         },
     },
     adminId: {
-      type: DataTypes.INTEGER,
-      allowNull: true, // Se não for obrigatório
-      references: {
-          model: 'administradores',
-          key: 'id',
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'SET NULL',
-  },
-  
+        type: DataTypes.INTEGER,
+        allowNull: true, // Se não for obrigatório
+        references: {
+            model: 'administradores',
+            key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+    },
 }, {
     tableName: 'metas',
     timestamps: true,
