@@ -7,6 +7,15 @@ import { Publicacoes } from '../models/publicacoes.js';
 import { Meta } from '../models/meta.js';
 import { Project } from '../models/projeto.js';
 
+import PDFDocument from 'pdfkit';
+import { Readable } from 'stream';
+import { fetchPublicacoesByUserId, getPublicacoesByUserId } from './publicacaoController.js';
+import { getGoalByUserId } from './metasController.js';
+import { getProjectByUserId } from './projetosController.js';
+import { eventIndex, getEventsByUserId } from './eventController.js';
+import { fetchEventsByUserId, fetchGoalsByUserId, fetchProjectsByUserId } from '../app.js';
+
+
 // Validações de senha
 function validaSenha(senha) {
   const mensagem = [];
@@ -332,5 +341,149 @@ export const updateUserDetails = async (req, res) => {
   } catch (error) {
     console.error('Erro ao atualizar informações do usuário:', error);
     res.status(500).json({ erro: "Erro ao atualizar informações do usuário", detalhes: error });
+  }
+};
+
+
+
+export const generateMonthlyReport = async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+      return res.status(400).json({ error: "UserId não fornecido." });
+  }
+
+  try {
+      // Obtenha o nome do usuário vinculado ao userId
+      const user = await Usuario.findByPk(userId, { attributes: ['nome'] });
+
+      if (!user) {
+          return res.status(404).json({ error: "Usuário não encontrado." });
+      }
+
+      const nomeUsuario = user.nome;
+
+      // Obtenha os dados necessários
+      const publicacoes = await fetchPublicacoesByUserId(userId);
+      const metas = await fetchGoalsByUserId(userId);
+      const projetos = await fetchProjectsByUserId(userId);
+      const eventos = await fetchEventsByUserId(userId);
+
+      // Criação do PDF usando um stream
+      const doc = new PDFDocument({ margin: 30 });
+
+      // Configurar cabeçalhos HTTP para o PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=Relatorio_Mensal_${userId}.pdf`);
+
+      // Conecte o stream do PDF diretamente na resposta HTTP
+      doc.pipe(res);
+
+      // Cabeçalho do PDF
+      doc.fontSize(16).text(`Relatório Mensal - Usuário: ${nomeUsuario}`, { align: 'center' });
+      doc.moveDown(2);
+
+      // Função auxiliar para desenhar tabelas com divisórias
+      const drawTable = (doc, headers, rows, columnWidths = []) => {
+          const startX = doc.page.margins.left;
+          let startY = doc.y;
+
+          // Desenhar cabeçalhos
+          doc.fontSize(12).font('Helvetica-Bold');
+          headers.forEach((header, i) => {
+              doc.text(header, startX + (columnWidths[i] || 150) * i, startY, {
+                  width: columnWidths[i] || 150,
+                  align: 'left',
+              });
+          });
+
+          // Linha divisória abaixo dos cabeçalhos
+          startY += 20;
+          doc.moveTo(startX, startY).lineTo(startX + columnWidths.reduce((a, b) => a + b, 0), startY).stroke();
+
+          // Desenhar linhas e colunas
+          rows.forEach(row => {
+              let rowY = startY + 10;
+              row.forEach((cell, i) => {
+                  const cellX = startX + (columnWidths[i] || 150) * i;
+                  doc.text(cell, cellX, rowY, {
+                      width: columnWidths[i] || 150,
+                      align: 'left',
+                  });
+
+                  // Linha vertical (divisória)
+                  doc.moveTo(cellX, startY).lineTo(cellX, rowY + 20).stroke();
+              });
+              startY += 30;
+
+              // Linha horizontal abaixo da linha de dados
+              doc.moveTo(startX, startY).lineTo(startX + columnWidths.reduce((a, b) => a + b, 0), startY).stroke();
+          });
+
+          doc.moveDown(2);
+      };
+
+      // Tabela de Publicações
+      doc.fontSize(14).font('Helvetica-Bold').text('Publicações', { underline: true });
+      if (publicacoes.length > 0) {
+          drawTable(
+              doc,
+              ['Título', 'Descrição'],
+              publicacoes.map(pub => [pub.titulo, pub.descricao]),
+              [200, 400]// Largura das colunas
+          );
+      } else {
+          doc.text('Nenhuma publicação encontrada.');
+      }
+
+      doc.moveDown();
+
+      // Tabela de Metas com largura maior
+      doc.fontSize(14).font('Helvetica-Bold').text('Metas', { underline: true });
+      if (metas.length > 0) {
+          drawTable(
+              doc,
+              ['Descrição'],
+              metas.map(meta => [meta.descricao]),
+              [650] // Largura da coluna para metas
+          );
+      } else {
+          doc.text('Nenhuma meta encontrada.');
+      }
+
+      doc.moveDown();
+
+      // Tabela de Projetos
+      doc.fontSize(14).font('Helvetica-Bold').text('Projetos', { underline: true });
+      if (projetos.length > 0) {
+          drawTable(
+              doc,
+              ['Empresa', 'Descrição'],
+              projetos.map(proj => [proj.empresa, proj.description]),
+              [200, 400] // Largura das colunas
+          );
+      } else {
+          doc.text('Nenhum projeto encontrado.');
+      }
+
+      doc.moveDown();
+
+      // Tabela de Eventos
+      doc.fontSize(14).font('Helvetica-Bold').text('Eventos', { underline: true });
+      if (eventos.length > 0) {
+          drawTable(
+              doc,
+              ['Tag', 'Descrição'],
+              eventos.map(evento => [evento.tag, evento.description]),
+              [200, 400] // Largura das colunas
+          );
+      } else {
+          doc.text('Nenhum evento encontrado.');
+      }
+
+      doc.end(); // Finaliza o PDF
+  } catch (error) {
+      console.error('Erro ao gerar relatório:', error);
+      res.status(500).json({ error: 'Erro ao gerar relatório. Por favor, tente novamente.' });
   }
 };

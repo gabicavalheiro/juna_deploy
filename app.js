@@ -68,6 +68,24 @@ async function conecta_db() {
 }
 conecta_db();
 
+
+export const fetchGoalsByUserId = async (userId) => {
+  const metas = await Meta.findAll({ where: { userId } });
+  return metas;
+};
+
+export const fetchProjectsByUserId = async (userId) => {
+  const projetos = await Project.findAll({ where: { userId } });
+  return projetos;
+};
+
+export const fetchEventsByUserId = async (userId) => {
+  const eventos = await Event.findAll({ where: { userId } });
+  return eventos;
+};
+
+
+
 app.get('/', (req, res) => {
   res.send('JUNA SERVER');
 });

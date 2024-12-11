@@ -230,3 +230,23 @@ export const getPublicacoesByProjectId = async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar publicações do projeto. Por favor, tente novamente.' });
     }
 };
+
+
+export const fetchPublicacoesByUserId = async (userId) => {
+    let user = await Usuario.findByPk(userId, {
+      include: [{ model: Publicacoes, as: 'publicacoes' }]
+    });
+  
+    if (!user) {
+      user = await Administrador.findByPk(userId, {
+        include: [{ model: Publicacoes, as: 'publicacoesAdmin' }]
+      });
+    }
+  
+    if (!user) {
+      throw new Error('Usuário ou administrador não encontrado');
+    }
+  
+    return user.publicacoes || user.publicacoesAdmin;
+  };
+  

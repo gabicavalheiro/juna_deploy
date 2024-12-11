@@ -161,3 +161,37 @@ export const deleteEvent = async (req, res) => {
         res.status(500).json({ error: "Erro ao remover evento. Por favor, tente novamente." });
     }
 };
+
+
+// Extrair eventos por userId
+export const extractEventsByUserId = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        // Verificar se o usuário existe
+        const user = await Usuario.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: "Usuário não encontrado" });
+        }
+
+        // Buscar eventos relacionados ao usuário
+        const events = await Event.findAll({
+            where: { userId },
+            include: [
+                { model: Usuario, as: "usuario", attributes: ["id", "nome"] },
+                { model: Administrador, as: "administrador", attributes: ["id", "nome"] },
+            ],
+        });
+
+        // Verificar se há eventos
+        if (events.length === 0) {
+            return res.status(404).json({ error: "Nenhum evento encontrado para este usuário." });
+        }
+
+        res.json(events);
+    } catch (error) {
+        console.error("Erro ao buscar eventos por userId:", error);
+        res.status(500).json({ error: "Erro ao buscar eventos por userId. Por favor, tente novamente." });
+    }
+};

@@ -4,11 +4,11 @@ import jwt from 'jsonwebtoken'
 import cors from 'cors';
 import { administradorIndex, administradorCreate, administradorDestroy } from './controllers/admController.js';
 import { createUser, listUsers } from './controllers/createUser.js';
-import { getAllUsersAndAdmins, updateUser, updateUserDetails, userByRole, userEvent, userIndex, usuarioDestroy } from './controllers/userController.js';
+import { generateMonthlyReport, getAllUsersAndAdmins, updateUser, updateUserDetails, userByRole, userEvent, userIndex, usuarioDestroy } from './controllers/userController.js';
 import {  login } from './controllers/loginController.js';
 import { updateUserImage } from './controllers/imageController.js';
 import upload from './utils/multerConfig.js';
-import { deleteEvent, eventDay, eventIndex, getEventsByAdminId, getEventsByUserId, handleSave } from './controllers/eventController.js';
+import { deleteEvent, eventDay, eventIndex, extractEventsByUserId, getEventsByAdminId, getEventsByUserId, handleSave } from './controllers/eventController.js';
 import { getUserByEmail, getUserByEmailRoute, getUserProfile } from './controllers/authController.js';
 import { addPublicationToProject, createPublicacao, deletePublicacao, getAllPublicacoes, getPublicacoesByUserId, updatePublicacao } from './controllers/publicacaoController.js';
 import { createGoal, deleteGoal, getCompletedGoals, getGoalByUserId, getGoalsByAdminId, getWeeklyGoals, goalIndex, markGoalAsCompleted, markGoalAsPending } from './controllers/metasController.js';
@@ -58,9 +58,7 @@ router.put('/updateUserDetails/:userId', updateUserDetails);
 
 router.post('/usuarios/:userId/eventos', handleSave);
 router.post('/administradores/:adminId/eventos', handleSave);
-router.get('/usuarios/:userId/eventos', getEventsByUserId);
 router.get('/administradores/:adminId/eventos', getEventsByAdminId);
-
 router.get('/events', eventIndex)
 router.get('/:idType/:id/events/day', eventDay);
 router.delete('/events/:id', deleteEvent)
@@ -81,7 +79,6 @@ router.post('/upload', upload.single('image'), updateUserImage);
 router.post('/metas/:adminId', createGoal);
 router.get('/metas',  goalIndex)
 router.delete('/metas/:id', deleteGoal)
-router.get('/usuario/:userId/metas', getGoalByUserId); 
 router.put('/metas/:id/concluir', markGoalAsCompleted);
 router.get('/meta/admin/:adminId', getGoalsByAdminId);
 router.get('/metas/admin/:adminId/concluidas', getCompletedGoals);
@@ -93,7 +90,6 @@ router.put('/metas/:id/pendente', markGoalAsPending);
 router.post('/projetos/:adminId', createProject);
 router.get('/projetos',  projectIndex)
 router.delete('/projetos/:id', deleteProject)
-router.get('/usuario/:userId/projetos', getProjectByUserId); 
 router.post('/projetos/publicacoes/:adminId', addPublicationToProject);
 
 router.get('/webhook', validateWebhook); // Endpoint GET para validação
@@ -101,7 +97,19 @@ router.post('/webhook', handleWebhookEvent); // Endpoint POST para eventos
 
 router.get('/auth/instagram/callback', instagramAuthCallback);
 
-router.get('/projetos/:id', getProjectById);
+
+
+
+
+
+//BY USER ID
+router.get('/usuario/:userId/eventos', extractEventsByUserId);
+router.get('/usuarios/:userId/eventos', getEventsByUserId);
+router.get('/usuarios/:userId', userIndex) 
+router.get('/usuario/:userId/metas', getGoalByUserId); 
+router.get('/usuario/:userId/projetos', getProjectByUserId); 
+router.get('/projetos/:userId', getProjectById);
+router.get('/usuario/:userId/relatorioMensal', generateMonthlyReport);
 
 
 
