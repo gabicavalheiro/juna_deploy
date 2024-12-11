@@ -57,7 +57,7 @@ async function conecta_db() {
     Publicacoes.belongsTo(Project, { foreignKey: 'projectId', as: 'projeto' });
 
 
-    // await Meta.sync({ alter: true });
+    // await Publicacoes.sync({ force: true });
 
     // Sincronizar os modelos
     // await sequelize.sync({ alter: true }); // Sincroniza todas as tabelas

@@ -73,22 +73,19 @@ export const Publicacoes = sequelize.define('publicacoes', {
         }
     },
     projectId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-          model: 'projects', // Nome da tabela referenciada
-          key: 'id'
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE',
-      constraints: {
-          name: 'fk_publicacoes_project' // Nome único
-      }
-  }
-  
+        type: DataTypes.INTEGER,
+        references: {
+            model: 'projects', // Nome da tabela referenciada
+            key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+        constraints: {
+            name: 'fk_publicacoes_project' // Nome único
+        }
+    }
+
 }, {
     tableName: 'publicacoes',
     timestamps: false
 });
-
-
